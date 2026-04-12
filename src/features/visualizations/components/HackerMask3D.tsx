@@ -55,8 +55,8 @@ export function HackerMask3D() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Sample size
-      const S = 150;
+      // Sample size - High density
+      const S = 180; 
       canvas.width = S;
       canvas.height = S;
       ctx.drawImage(maskImage, 0, 0, S, S);
@@ -69,59 +69,35 @@ export function HackerMask3D() {
         for (let x = 0; x < S; x++) {
           const index = (y * S + x) * 4;
           const r = imageData.data[index];
-          const g = imageData.data[index + 1];
-          const b = imageData.data[index + 2];
           
-          // Sample black/dark pixels
-          if (r < 180) {
-            // Normalize coordinates
-            const posX = (x - S / 2) * 0.7;
-            const posY = (S / 2 - y) * 0.9;
+          // Face Oval Mask: Only sample within the face bounds
+          const dx = (x - S / 2) / (S / 2);
+          const dy = (y - S / 2) / (S / 2);
+          const dist = Math.sqrt(dx*dx + dy*dy);
+
+          if (dist < 0.9) {
+            const posX = (x - S / 2) * 0.5;
+            const posY = (S / 2 - y) * 0.65;
             
-            // Add depth to create a mask-like curve
-            // Center is closer (z > 0), edges are further back (z < 0)
-            const dx = (x - S/2) / (S/2);
-            const dy = (y - S/2) / (S/2);
-            const distFromCenter = Math.sqrt(dx*dx + dy*dy);
-            
-            // Front-back face curvature (the general shell)
-            let z = Math.cos(distFromCenter * Math.PI * 0.5) * 40;
-            
-            // ─── 1. SMOOTH EYE INDENTS (Elliptical) ───
-            const eyeX = Math.abs(posX) - 15;
-            const eyeY = posY - 25;
-            const eyeDist = Math.sqrt((eyeX / 10)**2 + (eyeY / 8)**2);
-            if (eyeDist < 1) {
-               // Smoothly dip in using a cosine curve
-               const eyeDip = (Math.cos(eyeDist * Math.PI) + 1) * 0.5;
-               z -= eyeDip * 10;
+            // --- 1. Face Curvature ---
+            let z = Math.cos(dist * Math.PI * 0.5) * 40;
+
+            // --- 2. MANUALLY SCULPT THE NOSE (Softened) ---
+            const nX = posX;
+            const nY = posY - 4;
+            const nDX = Math.abs(nX) / 10; // Wider
+            const nDY = Math.abs(nY) / 20;
+            if (nDX < 1 && nDY < 1) {
+               z += Math.exp(-(nDX * nDX * 3)) * (1 - nDY) * 11;
             }
 
-            // ─── 2. SMOOTH WIDE SMILE (Parabolic) ───
-            // Smile is roughly at posY = -25, wide from posX -35 to 35
-            const smileXFactor = Math.max(0, 1 - (Math.abs(posX) / 38));
-            const smileYFactor = Math.max(0, 1 - (Math.abs(posY + 25) / 15));
-            if (smileXFactor > 0 && smileYFactor > 0) {
-               // Combine into a smooth protrusion
-               const smileGlow = Math.pow(smileXFactor * smileYFactor, 1.5);
-               z += smileGlow * 14;
-            }
+            // Anonymous Features Check
+            const isMaskFeature = r < 160;
 
-            // ─── 3. MUSTACHE / CHEEK VOLUME (Soft bulge) ───
-            const cheekX = Math.abs(posX) - 20;
-            const cheekY = posY + 5;
-            const cheekDist = Math.sqrt((cheekX / 15)**2 + (cheekY / 12)**2);
-            if (cheekDist < 1) {
-               const cheekBulge = (Math.cos(cheekDist * Math.PI) + 1) * 0.5;
-               z += cheekBulge * 5;
+            if (isMaskFeature) {
+               positions.push(posX, posY, z);
+               colors.push(colorPrimary.r, colorPrimary.g, colorPrimary.b);
             }
-
-            positions.push(posX, posY, z);
-            colors.push(colorPrimary.r, colorPrimary.g, colorPrimary.b);
-            
-            // Add a second layer for thickness
-            positions.push(posX, posY, z - 2);
-            colors.push(colorPrimary.r * 0.4, colorPrimary.g * 0.4, colorPrimary.b * 0.4);
           }
         }
       }
@@ -134,7 +110,7 @@ export function HackerMask3D() {
         size: 0.8,
         vertexColors: true,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.9,
         blending: THREE.AdditiveBlending,
         sizeAttenuation: true
       });
@@ -145,9 +121,8 @@ export function HackerMask3D() {
       // --- Animation Loop ---
       const render = () => {
         frameId = requestAnimationFrame(render);
-        // Full Continuous Rotation like the Globe (Synced speed)
-        maskRoot.rotation.y += 0.0015; 
-        maskRoot.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
+        maskRoot.rotation.y = -0.2; // Facing left
+        maskRoot.rotation.x = 0.1;
         renderer.render(scene, camera);
       };
       render();
