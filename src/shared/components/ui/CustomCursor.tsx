@@ -79,7 +79,7 @@ export function CustomCursor() {
       for (let i = 0; i < numElements; i++) {
         const el = document.createElement("div");
         el.className =
-          "fixed top-0 left-0 font-body leading-none pointer-events-none z-[99998]";
+          "fixed top-0 left-0 font-body leading-none pointer-events-none z-[9999998]";
         el.style.opacity = "0";
         el.style.color = "var(--color-primary)";
         containerRef.current.appendChild(el);
@@ -294,10 +294,10 @@ export function CustomCursor() {
     <>
       <div
         ref={containerRef}
-        className="fixed inset-0 pointer-events-none z-[99998]"
+        className="fixed inset-0 pointer-events-none z-[9999998]"
       />
 
-      <div className="fixed top-0 left-0 z-[99999] pointer-events-none mix-blend-difference">
+      <div className="fixed top-0 left-0 z-[9999999] pointer-events-none mix-blend-difference">
         <div ref={(el) => { coreRefs.current[0] = el; }} className="absolute top-0 left-0 w-3 h-4 opacity-90 scale-150" />
         <div ref={(el) => { coreRefs.current[1] = el; }} className="absolute top-0 left-0 w-4 h-1 opacity-80 scale-150" />
         <div ref={(el) => { coreRefs.current[2] = el; }} className="absolute top-0 left-0 w-1 h-4 opacity-70 scale-150" />
