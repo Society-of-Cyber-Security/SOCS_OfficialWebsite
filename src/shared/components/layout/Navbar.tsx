@@ -73,14 +73,14 @@ export function Navbar() {
             </div>
 
             {/* ── Center: Nav Links (Desktop) ── */}
-            <div className="hidden lg:flex items-center gap-0 flex-1 justify-center px-2">
+            <div className="hidden lg:flex items-center gap-0 flex-1 justify-center px-4">
               {links.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`relative px-2 xl:px-4 py-2 text-[12px] xl:text-[14px] font-bold font-turret tracking-[0.05em] uppercase transition-all duration-300 group ${
+                    className={`relative px-4 xl:px-6 py-2 text-[14px] xl:text-[15px] font-black font-turret tracking-[0.1em] uppercase transition-all duration-300 group ${
                       isActive ? "text-primary" : "text-gray-400 hover:text-white"
                     }`}
                   >
@@ -90,8 +90,10 @@ export function Navbar() {
                         className="absolute inset-x-0 bottom-0 top-0 z-0 bg-primary/5 border-l border-r border-primary/20"
                       />
                     )}
-                    <span className="relative z-10 flex items-center">
+                    <span className="relative z-10 flex items-center transition-all duration-300 group-hover:text-primary">
+                      <span className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 mr-1 text-primary font-mono text-xs">[</span>
                       {link.name}
+                      <span className="opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ml-1 text-primary font-mono text-xs">]</span>
                     </span>
                   </Link>
                 );

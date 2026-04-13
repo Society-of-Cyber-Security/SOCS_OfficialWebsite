@@ -27,7 +27,7 @@ export function Terminal() {
         top: state.pos.y,
         width: state.isMinimized ? 260 : state.size.w,
         height: state.isMinimized ? "auto" : state.size.h,
-        zIndex: 100001,
+        zIndex: 3000001,
       }}
     >
       <TerminalHeader
