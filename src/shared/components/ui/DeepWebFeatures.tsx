@@ -79,7 +79,7 @@ export function DeepWebFeatures() {
         <div className="fixed inset-0 z-[99999] bg-red-950 flex flex-col justify-center items-center pointer-events-auto">
           <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjMiPiA8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIC8+IDwvc3ZnPg==')] opacity-30 animate-scanlines" />
           <div className="max-w-xl w-full bg-black border-2 border-red-500 p-8 relative z-10 shadow-[0_0_100px_rgba(255,0,0,0.6)]">
-            <h1 className="text-4xl font-black font-grotesk text-red-500 text-center mb-6 tracking-tighter uppercase glitch-effect" data-text="SYSTEM LOCKDOWN">
+            <h1 className="text-4xl font-black font-grotesk text-red-500 text-center mb-6 tracking-tighterer uppercase glitch-effect" data-text="SYSTEM LOCKDOWN">
               SYSTEM LOCKDOWN
             </h1>
             <div className="space-y-4 font-mono text-sm text-red-400">

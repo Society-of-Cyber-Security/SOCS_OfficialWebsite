@@ -1,103 +1,148 @@
 "use client";
-import React, { useState } from 'react';
-import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { SectionHeader } from "@/shared/components/ui/SectionHeader";
-import { GlitchText } from "@/shared/components/ui/GlitchText";
-import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
-import { Camera, Lock } from "lucide-react";
 
-const GALLERY_IMAGES = [
-  { id: 1, title: "CORE_TEAM_BETA", category: "Team", src: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
-  { id: 2, title: "INFRA_DUMP_01", category: "Infrastructure", src: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
-  { id: 3, title: "HACKATHON_RITUAL", category: "Events", src: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
-  { id: 4, title: "NODE_SQUAD_OMEGA", category: "Team", src: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" },
-  { id: 5, title: "SECURITY_LAB_V2", category: "Infrastructure", src: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
-  { id: 6, title: "NIGHT_PROTOCOL", category: "Events", src: "https://images.unsplash.com/photo-1510511459019-5dee1a2078a5?auto=format&fit=crop&w=800&q=80" },
+import React, { useState, useEffect } from 'react';
+import { PageWrapper } from "@/shared/components/layout/PageWrapper";
+import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
+import { Plus, Image as ImageIcon, Trash2 } from "lucide-react";
+import { useAuth } from "@/core/context/AuthContext";
+import { fetchApi } from "@/shared/lib/api";
+
+const FALLBACK_IMAGES = [
+  { _id: 1, caption: "Core Team Briefing", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
+  { _id: 2, caption: "Infrastructure Dock", url: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
+  { _id: 3, caption: "Hackathon Event 2026", url: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
+  { _id: 4, caption: "Cyber Squad Collaboration", url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" },
+  { _id: 5, caption: "Hardware & Security Lab", url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
+  { _id: 6, caption: "Night CTF Tournament", url: "https://images.unsplash.com/photo-1510511459019-5dee1a2078a5?auto=format&fit=crop&w=800&q=80" },
 ];
 
 export default function GalleryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [images, setImages] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, role } = useAuth();
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const res = await fetchApi('/gallery');
+        if (res && res.success && res.data.length > 0) {
+          // Combine uploaded images with fallback placeholders to keep it looking nice
+          setImages([...res.data, ...FALLBACK_IMAGES]);
+        } else {
+          setImages(FALLBACK_IMAGES);
+        }
+      } catch (err) {
+        console.error("Failed to load gallery images", err);
+        setImages(FALLBACK_IMAGES);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadImages();
+  }, [isModalOpen]); // Reload images when modal closes
+
+  const getImageUrl = (url: string) => {
+    if (url.startsWith('http')) return url;
+    return `http://localhost:5001${url}`; // Assuming local dev for uploads
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this image?')) return;
+    try {
+      const { fetchApi } = await import('@/shared/lib/api');
+      const result = await fetchApi(`/gallery/${id}`, { method: 'DELETE' });
+      if (result.success) {
+        setImages(images.filter(img => img._id !== id));
+      } else {
+        alert(result.error || 'Failed to delete');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error deleting image');
+    }
+  };
 
   return (
-    <PageWrapper>
+    <PageWrapper className="pt-24 pb-32">
       <AddEntityModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        entityType="VISUAL" 
+        entityType="VISUAL"
+        mode="add"
       />
       
-      <SectionHeader 
-        title="DECRYPTED_VISUALS" 
-        subtitle="A visual log of the society's physical footprint and core node members." 
-      />
-      
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-4 mb-8 mt-6 gap-6">
-        <div className="flex items-center gap-3 text-[10px] text-gray-500 font-mono tracking-widest uppercase">
-          <Camera className="w-4 h-4 text-primary/60 shrink-0" />
-          <span className="leading-tight">LENS_STATUS: ONLINE // SCANNING...</span>
-        </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-primary/10 border border-primary/40 px-6 py-3 text-[10px] font-bold font-mono tracking-[0.2em] text-primary hover:bg-primary hover:text-black transition-all duration-300 group w-full md:w-auto"
-          style={{ clipPath: "polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-        >
-          <span className="text-lg group-hover:rotate-90 transition-transform">+</span>
-          <span>ADD_VISUAL</span>
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {GALLERY_IMAGES.map((img) => (
-          <div key={img.id} className="group relative dashboard-card overflow-hidden">
-            {/* Image Container */}
-            <div className="aspect-video overflow-hidden border-b border-white/5">
-              <img 
-                src={img.src} 
-                alt={img.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100"
-              />
-              
-              {/* Scanline overlay */}
-              <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
+      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 z-10 relative">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between pb-8 border-b border-[var(--color-cyber-gray)] gap-6 relative mb-12">
+          <div>
+            <div className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-4">
+              Visual Archive
             </div>
-
-            {/* Content info */}
-            <div className="p-4 relative bg-black/40 backdrop-blur-sm">
-               <div className="flex justify-between items-start mb-2">
-                  <div className="text-[10px] text-primary/60 font-mono tracking-widest uppercase">{img.category}</div>
-                  <Lock className="w-3 h-3 text-white/20 group-hover:text-primary transition-colors" />
-               </div>
-               <h3 className="text-sm font-bold font-jetbrains text-white group-hover:text-primary transition-colors truncate">
-                 <GlitchText text={img.title} />
-               </h3>
-               
-               {/* Hover reveal info */}
-               <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                  <div className="flex items-center gap-2 text-[8px] text-gray-500 font-mono">
-                    <Camera className="w-3 h-3" />
-                    <span>IMG_SCAN_SUCCESS</span>
-                  </div>
-                  <div className="text-[8px] text-primary font-bold tracking-tighter uppercase">VIEW_METADATA</div>
-               </div>
-            </div>
-            
-            {/* Corner accents */}
-            <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none overflow-hidden">
-               <div className="absolute top-0 right-0 w-full h-[1px] bg-primary/40" />
-               <div className="absolute top-0 right-0 w-[1px] h-full bg-primary/40" />
-            </div>
-            <div className="absolute bottom-0 left-0 w-8 h-8 pointer-events-none overflow-hidden">
-               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-primary/40" />
-               <div className="absolute bottom-0 left-0 w-[1px] h-full bg-primary/40" />
-            </div>
+            <h1 className="font-heading font-black text-[clamp(4rem,8vw,7rem)] text-cyber-blue tracking-tighter leading-[0.9]">
+              Event & Team <br className="hidden sm:block" /> Gallery
+            </h1>
+            <p className="font-body text-sm md:text-base text-[var(--color-cyber-light)] mt-6 max-w-xl leading-relaxed">
+              A visual log of hackathons, club sessions, infrastructure buildouts, and community events.
+            </p>
           </div>
-        ))}
-      </div>
-      
-      {/* Disclaimer */}
-      <div className="mt-20 p-6 border border-white/5 bg-white/2 self-start max-w-lg">
-        <div className="text-[9px] text-gray-500 font-mono uppercase tracking-[0.3em] mb-2 leading-tight">
-          Warning: Unauthorized replication of society visuals is strictly prohibited under SOCS Protocol Sec. 4.
+
+          {isAuthenticated && (role === 'admin' || role === 'superadmin') && (
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary px-6 py-3 text-xs uppercase tracking-widest flex items-center justify-center shrink-0 self-start md:self-end rounded-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              <span>Upload Image</span>
+            </button>
+          )}
+        </div>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-16">
+          {isLoading ? (
+             <div className="col-span-full py-24 text-center">
+               <p className="text-[var(--color-cyber-muted)] font-mono text-sm tracking-widest uppercase animate-pulse">Decrypting Visual Data...</p>
+             </div>
+          ) : (
+            images.map((img, idx) => (
+              <div key={img._id || idx} className="stealth-card overflow-hidden group border border-[var(--color-cyber-gray)] rounded-sm flex flex-col">
+                
+                {/* Image Container */}
+                <div className="aspect-video overflow-hidden border-b border-[var(--color-cyber-gray)] relative bg-[var(--color-cyber-dark)]">
+                  <img 
+                    src={getImageUrl(img.url)} 
+                    alt={img.caption || 'Gallery visual'}
+                    className="w-full h-full object-cover grayscale opacity-90 transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100"
+                  />
+                  <div className="absolute top-4 right-4 bg-[var(--color-cyber-black)]/90 backdrop-blur-md px-3 py-1 border border-[var(--color-cyber-gray)] text-[9px] font-mono tracking-widest text-[var(--color-cyber-white)] uppercase rounded-sm">
+                    {img.caption?.split(' ')[0] || 'Visual'}
+                  </div>
+                </div>
+
+                {/* Content info */}
+                <div className="p-6 relative z-10 flex-grow flex flex-col justify-between">
+                  <div className="flex justify-between items-start mb-4 gap-4">
+                    <h3 className="text-xl font-heading font-bold text-cyber-green tracking-tighter leading-tight">
+                      {img.caption || 'Verified Capture'}
+                    </h3>
+                    {isAuthenticated && (role === 'admin' || role === 'superadmin') && img._id && typeof img._id !== 'number' && (
+                      <button 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(img._id); }} 
+                        className="p-1.5 bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] hover:border-red-500 text-[var(--color-cyber-muted)] hover:text-red-500 rounded-sm transition-colors cursor-pointer shrink-0"
+                        title="Delete Image"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-[0.2em] mt-auto">
+                    <ImageIcon className="w-3.5 h-3.5 text-[var(--color-cyber-neon)]" />
+                    <span>Verified Capture</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </PageWrapper>

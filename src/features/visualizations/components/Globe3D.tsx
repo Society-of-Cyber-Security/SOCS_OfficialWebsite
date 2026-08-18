@@ -35,12 +35,10 @@ export function Globe3D() {
     scene.add(globeRoot);
 
     const GLOBE_RADIUS = width < 768 ? Math.min(50, width / 7) : width < 1280 ? Math.min(45, width / 18) : Math.min(42, width / 28);
-    const colorPrimary = new THREE.Color(0xc8ff00); // Neon Green
+    const colorPrimary = new THREE.Color(0x0284c7); // Electric Sky Blue
 
-    // --- 1. Load World Map for Sampling ---
     const mapImage = new Image();
     mapImage.crossOrigin = "Anonymous";
-    // Using Three.js official example texture for high reliability
     mapImage.src = "https://threejs.org/examples/textures/planets/earth_specular_2048.jpg";
 
     let frameId: number;
@@ -62,11 +60,9 @@ export function Globe3D() {
         const x = Math.floor(((lon + 180) / 360) * 1024);
         const y = Math.floor(((90 - lat) / 180) * 512);
         const index = (y * 1024 + x) * 4;
-        // In this specular map, land is dark (<100) and water is bright (>128)
         return imageData.data[index] < 80; 
       };
 
-      // --- Generate Dots on a Grid for "Perfect" Look ---
       const positions: number[] = [];
       const colors: number[] = [];
 
@@ -94,27 +90,35 @@ export function Globe3D() {
       pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
       
       const pointsMaterial = new THREE.PointsMaterial({
-        size: 0.9,
+        size: 1.1,
         vertexColors: true,
         transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending,
+        opacity: 0.85,
         sizeAttenuation: true
       });
       
       globeRoot.add(new THREE.Points(pointsGeometry, pointsMaterial));
 
-      // --- 2. Grid Sphere (Subtle background grid) ---
+      // Grid Sphere
       const gridGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 48, 24);
       const gridMat = new THREE.MeshBasicMaterial({ 
-        color: 0xc8ff00, 
+        color: 0x0284c7, 
         wireframe: true, 
         transparent: true, 
-        opacity: 0.04 
+        opacity: 0.08 
       });
       globeRoot.add(new THREE.Mesh(gridGeo, gridMat));
 
-      // --- 3. Attack Arcs ---
+      // Core glow sphere
+      const innerGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 0.96, 32, 32);
+      const innerMat = new THREE.MeshBasicMaterial({
+        color: 0xe0f2fe,
+        transparent: true,
+        opacity: 0.6
+      });
+      globeRoot.add(new THREE.Mesh(innerGeo, innerMat));
+
+      // Attack Arcs
       const arcGroup = new THREE.Group();
       globeRoot.add(arcGroup);
 
@@ -142,9 +146,9 @@ export function Globe3D() {
         };
 
         const threats = [
-          { name: 'MALWARE', color: 0xff3333 }, // Neon Red
-          { name: 'PHISHING', color: 0xaa00ff }, // Neon Purple
-          { name: 'EXPLOIT', color: 0xffcc00 }  // Neon Yellow
+          { name: 'SECURITY_NODE', color: 0x0284c7 }, // Electric Sky
+          { name: 'CTF_EVENT', color: 0xf59e0b },    // Championship Gold
+          { name: 'EXPLOIT_PATCH', color: 0x6366f1 } // Royal Violet
         ];
         const threat = threats[Math.floor(Math.random() * threats.length)];
 
@@ -159,25 +163,21 @@ export function Globe3D() {
 
         const curve = new THREE.QuadraticBezierCurve3(s, m, e);
         
-        // --- Thick Arc (Tube) ---
-        const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.2, 3, false);
+        const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.3, 3, false);
         const tubeMat = new THREE.MeshBasicMaterial({ 
           color: threat.color, 
           transparent: true, 
           opacity: 0,
-          blending: THREE.AdditiveBlending 
         });
         const tube = new THREE.Mesh(tubeGeo, tubeMat);
         arcGroup.add(tube);
 
-        // --- Impact Marker (Circles) ---
         const impactGroup = new THREE.Group();
-        // Align impact group to the sphere surface at 'e'
         impactGroup.position.copy(e);
-        impactGroup.lookAt(0, 0, 0); // Face the center
+        impactGroup.lookAt(0, 0, 0);
         
-        const dotGeo = new THREE.CircleGeometry(0.6, 16);
-        const ringGeo = new THREE.RingGeometry(0.8, 1.2, 16);
+        const dotGeo = new THREE.CircleGeometry(0.8, 16);
+        const ringGeo = new THREE.RingGeometry(1.0, 1.6, 16);
         const markerMat = new THREE.MeshBasicMaterial({ 
           color: threat.color, 
           transparent: true, 
@@ -190,7 +190,6 @@ export function Globe3D() {
         impactGroup.add(dot, ring);
         arcGroup.add(impactGroup);
 
-        // --- Animation ---
         const tl = gsap.timeline({
           onComplete: () => {
             arcGroup.remove(tube);
@@ -204,13 +203,13 @@ export function Globe3D() {
         });
 
         tl.to([tubeMat, markerMat], {
-          opacity: 0.8,
+          opacity: 0.9,
           duration: 0.8,
           ease: "power2.out"
         })
         .to(ring.scale, {
-          x: 1.5,
-          y: 1.5,
+          x: 1.6,
+          y: 1.6,
           duration: 1.5,
           ease: "power1.inOut"
         }, 0)
@@ -221,12 +220,11 @@ export function Globe3D() {
         }, "+=0.5");
       };
       
-      arcInterval = setInterval(createArc, 1800);
+      arcInterval = setInterval(createArc, 1600);
 
-      // --- Animation Loop ---
       const render = () => {
         frameId = requestAnimationFrame(render);
-        globeRoot.rotation.y += 0.0015;
+        globeRoot.rotation.y += 0.0018;
         renderer.render(scene, camera);
       };
       render();

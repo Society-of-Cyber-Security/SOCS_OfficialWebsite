@@ -1,55 +1,88 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { animateCounter } from "@/shared/lib/animations";
-import { Shield } from "lucide-react";
+import React, { useRef, useEffect } from "react";
+import { NumberTicker } from "@/shared/components/ui/NumberTicker";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export function StatsSection() {
-  const membersRef = useRef<HTMLDivElement>(null);
-  const projectsRef = useRef<HTMLDivElement>(null);
-  const ctfsRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (membersRef.current) animateCounter(membersRef.current, 42);
-    if (projectsRef.current) animateCounter(projectsRef.current, 15);
-    if (ctfsRef.current) animateCounter(ctfsRef.current, 8);
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".stat-block",
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="py-10 mb-20">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="dashboard-card p-10 text-center relative group overflow-hidden border-t-2 border-t-primary/30">
-          <div className="absolute top-0 left-0 p-2 text-[8px] text-gray-500 font-bold tracking-widest uppercase">Metric_001</div>
-          <div className="text-6xl font-grotesk font-bold text-primary text-glow mb-4 inline-flex items-center">
-            <span ref={membersRef}>0</span><span className="text-3xl ml-1">+</span>
-          </div>
-          <div className="font-jetbrains text-gray-400 uppercase tracking-[0.3em] text-xs">Active_Members</div>
-          <div className="mt-6 flex justify-center gap-1">
-            {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-1 h-3 bg-primary/20 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.1}s` }}></div>)}
-          </div>
-        </div>
+    <section ref={sectionRef} className="py-24 w-full bg-[var(--color-cyber-black)] relative">
+      
+      {/* Top Label */}
+      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 mb-12">
+        <span className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)]">
+          03 — Impact Metrics
+        </span>
+      </div>
 
-        <div className="dashboard-card p-10 text-center relative group overflow-hidden border-t-2 border-t-[#6200EA]/30">
-          <div className="absolute top-0 left-0 p-2 text-[8px] text-gray-500 font-bold tracking-widest uppercase">Metric_002</div>
-          <div className="text-6xl font-grotesk font-bold text-white mb-4 inline-flex items-center">
-            <span ref={projectsRef}>0</span><span className="text-3xl ml-1">+</span>
-          </div>
-          <div className="font-jetbrains text-gray-400 uppercase tracking-[0.3em] text-xs">Research_Projects</div>
-          <div className="mt-6 w-full h-[1px] bg-gradient-to-r from-transparent via-[#6200EA]/50 to-transparent"></div>
-        </div>
+      <div className="w-full border-y border-[var(--color-cyber-gray)]">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[var(--color-cyber-gray)]">
+            
+            {/* Metric 001: Active Members */}
+            <div className="stat-block py-16 md:py-20 md:pr-12 flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-blue mb-4">
+                <NumberTicker value={42} />
+                <span className="text-[var(--color-cyber-muted)] font-light">+</span>
+              </div>
+              <div className="font-mono text-sm uppercase tracking-widest text-[var(--color-cyber-light)] font-medium">
+                Active Members
+              </div>
+            </div>
 
-        <div className="dashboard-card p-10 text-center relative group overflow-hidden border-t-2 border-t-primary/30">
-          <div className="absolute top-0 left-0 p-2 text-[8px] text-gray-500 font-bold tracking-widest uppercase">Metric_003</div>
-          <div className="text-6xl font-grotesk font-bold text-primary text-glow mb-4 inline-flex items-center">
-            <span ref={ctfsRef}>0</span>
+            {/* Metric 002: Research Projects */}
+            <div className="stat-block py-16 md:py-20 md:px-12 flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-red mb-4">
+                <NumberTicker value={15} />
+                <span className="text-[var(--color-cyber-muted)] font-light">+</span>
+              </div>
+              <div className="font-mono text-sm uppercase tracking-widest text-[var(--color-cyber-light)] font-medium">
+                Research Projects
+              </div>
+            </div>
+
+            {/* Metric 003: CTF Victories */}
+            <div className="stat-block py-16 md:py-20 md:pl-12 flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-yellow mb-4">
+                <NumberTicker value={8} />
+              </div>
+              <div className="font-mono text-sm uppercase tracking-widest text-[var(--color-cyber-light)] font-medium">
+                CTF Victories
+              </div>
+            </div>
+
           </div>
-          <div className="font-jetbrains text-gray-400 uppercase tracking-[0.3em] text-xs">CTF_Victories</div>
-          <div className="mt-6 flex justify-between items-end">
-             <div className="w-10 h-10 border border-primary/20 flex items-center justify-center">
-               <Shield className="w-4 h-4 text-primary" />
-             </div>
-             <div className="text-[8px] text-primary/40 font-mono tracking-tighter">NODE_READY</div>
-          </div>
+
         </div>
       </div>
     </section>

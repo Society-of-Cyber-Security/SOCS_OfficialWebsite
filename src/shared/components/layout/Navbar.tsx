@@ -1,212 +1,157 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { NeonButton } from "@/shared/components/ui/NeonButton";
 import { MobileMenu } from "./MobileMenu";
-import { X, Menu } from "lucide-react";
+import { Menu, X, User, LogOut, Inbox } from "lucide-react";
+import { useAuth } from "@/core/context/AuthContext";
+import { RoleBadge } from "@/shared/components/auth/RoleBadge";
+import { fetchApi } from "@/shared/lib/api";
 
-import { projects } from "@/core/config/projects";
-import { events } from "@/core/config/events";
+function InboxButton() {
+  const [count, setCount] = useState(0);
 
-const projectItems = projects.map(p => ({ text: `⚡ PROJECT: ${p.title}`, href: `/projects/${p.slug}` }));
-const eventItems = events.map(e => ({ text: `📅 EVENT: ${e.title} [${new Date(e.date).toLocaleDateString("en-US", {day:"numeric",month:"short"})}]`, href: `/events/${e.slug}` }));
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await fetchApi('/submissions/pending');
+        if (res && res.success) {
+          setCount(res.count || 0);
+        }
+      } catch (e) {
+        // fail silently
+      }
+    };
+    fetchCount();
+  }, []);
 
-// Base feed before API loads
-const baseFeedItems: { text: string; href: string }[] = [];
-const maxLocal = Math.max(projectItems.length, eventItems.length);
-for (let i = 0; i < maxLocal; i++) {
-  if (projectItems[i]) baseFeedItems.push(projectItems[i]);
-  if (eventItems[i]) baseFeedItems.push(eventItems[i]);
+  return (
+    <Link
+      href="/inbox"
+      className="btn-primary text-sm px-4 py-2 flex items-center gap-2 relative"
+    >
+      <Inbox className="w-4 h-4" />
+      <span>Inbox</span>
+      {count > 0 && (
+        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </Link>
+  );
 }
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [tickerContent, setTickerContent] = useState([...baseFeedItems, ...baseFeedItems]);
+  const { isAuthenticated, role, logout, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    async function fetchLiveIncidents() {
-      try {
-        const response = await fetch("/api/ctfs");
-        if (!response.ok) return;
-        const data = await response.json();
-        
-        if (Array.isArray(data) && data.length > 0) {
-          const liveItems = data.map((ctf: any) => {
-            const startDate = new Date(ctf.start).toLocaleDateString("en-US", { day: "numeric", month: "short" });
-            const endDate = new Date(ctf.finish).toLocaleDateString("en-US", { day: "numeric", month: "short" });
-            return {
-              text: `⚠️ LIVE TARGET: ${ctf.title} (${ctf.format || "CTF"}) // INIT: ${startDate} - HALT: ${endDate}`,
-              href: ctf.url || ctf.ctftime_url || "#"
-            };
-          });
-          // Interleave: Project -> Event -> CTF
-          const interleaved: { text: string; href: string }[] = [];
-          const maxLength = Math.max(projectItems.length, eventItems.length, liveItems.length);
-          for (let i = 0; i < maxLength; i++) {
-            if (projectItems[i]) interleaved.push(projectItems[i]);
-            if (eventItems[i]) interleaved.push(eventItems[i]);
-            if (liveItems[i]) interleaved.push(liveItems[i]);
-          }
-          
-          setTickerContent([...interleaved, ...interleaved]);
-        }
-      } catch (err) {
-        console.error("Ticker Feed Error:", err);
-      }
-    }
-    fetchLiveIncidents();
-  }, []);
-
   const links = [
-    { name: "Home",      href: "/",          code: "01" },
-    { name: "Team",      href: "/team",       code: "02" },
-    { name: "Projects",  href: "/projects",   code: "03" },
-    { name: "Events",    href: "/events",     code: "04" },
-    { name: "Resources", href: "/resources",  code: "05" },
-    { name: "Gallery",   href: "/gallery",    code: "06" },
-    { name: "Contact",   href: "/contact",    code: "07" },
+    { name: "About",      href: "/#about" }, // Or just home scroll
+    { name: "Initiatives",href: "/projects" },
+    { name: "Events",    href: "/events" },
+    { name: "Team",      href: "/team" },
+    { name: "Gallery",   href: "/gallery" },
+    { name: "Resources", href: "/resources" },
+    { name: "Contact",   href: "/contact" },
   ];
-
-  // `tickerContent` is now handled by state directly above
 
   return (
     <>
-      {/* ── Standard Navbar ── */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-[3000000] transition-all duration-300 min-h-[64px] flex flex-col shadow-2xl ${
+        className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-400 ease-out flex flex-col h-[72px] justify-center ${
           scrolled || pathname !== "/"
-            ? "bg-[#050508] backdrop-blur-md border-b border-primary/30"
-            : "bg-transparent border-b border-transparent"
+            ? "bg-[var(--color-cyber-black)]/95 backdrop-blur-md border-b border-[var(--color-cyber-gray)] shadow-sm"
+            : "bg-transparent"
         }`}
       >
-          <div className="w-full flex items-center justify-between gap-2 px-3 sm:px-4 md:px-12 py-3.5 md:py-4">
-            {/* ── Left: Logo ── */}
-            <div className="flex items-center shrink-0">
-              <Link href="/" className="flex items-center gap-2 md:gap-4 group scale-85 sm:scale-90 md:scale-100 origin-left">
-                <div className="relative">
-                  <span className="font-turret text-xl md:text-2xl font-black text-white tracking-[0.05em] transition-all duration-300 group-hover:text-primary">
-                    SOCS
-                  </span>
-                  <div className="absolute -bottom-1 left-0 w-0 h-[2px] bg-primary group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(200,255,0,0.8)]" />
-                </div>
-                <div className="relative flex items-center">
-                  <div className="w-[2px] md:w-[3px] h-5 md:h-6 bg-primary shadow-[0_0_15px_rgba(200,255,0,0.6)]" />
-                  <div className="ml-1.5 md:ml-2 w-1 md:w-1.5 h-1 md:h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(200,255,0,0.8)]" />
-                </div>
-              </Link>
+        <div className="w-full max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <img src="/logo.png" alt="SOCS Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,184,255,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(0,184,255,0.8)] transition-all duration-300" />
+            <div className="flex items-end gap-2">
+              <span className="font-heading font-black text-3xl tracking-tighterer text-[var(--color-cyber-white)] leading-none drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] group-hover:text-cyber-blue group-hover:drop-shadow-[0_0_12px_var(--color-cyber-blue)] transition-all duration-300">
+                SOCS
+              </span>
             </div>
+          </Link>
 
-            {/* ── Center: Nav Links (Desktop) ── */}
-            <div className="hidden lg:flex items-center gap-0 flex-1 justify-center px-4">
-              {links.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className={`relative px-4 xl:px-6 py-2 text-[14px] xl:text-[15px] font-black font-turret tracking-[0.1em] uppercase transition-all duration-300 group ${
-                      isActive ? "text-primary" : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-glow"
-                        className="absolute inset-x-0 bottom-0 top-0 z-0 bg-primary/5 border-l border-r border-primary/20"
-                      />
-                    )}
-                    <span className="relative z-10 flex items-center transition-all duration-300 group-hover:text-primary">
-                      <span className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 mr-1 text-primary font-mono text-xs">[</span>
-                      {link.name}
-                      <span className="opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ml-1 text-primary font-mono text-xs">]</span>
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* ── Right: Actions ── */}
-            <div className="flex items-center justify-end gap-2 md:gap-4 shrink-0 min-w-0">
-              <div className="flex sm:hidden items-center">
-                <NeonButton
-                  href="/join"
-                  variant="outline"
-                  className="text-[8px] px-2.5 py-2 font-black tracking-[0.14em] border min-w-[72px]"
+          {/* Desktop Nav Links */}
+          <div className="hidden lg:flex items-center gap-8">
+            {links.map((link) => {
+              const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`group text-base font-bold transition-all duration-300 relative flex items-center ${
+                    isActive 
+                      ? "text-cyber-blue scale-105" 
+                      : "text-[var(--color-cyber-white)] hover:text-cyber-neon hover:scale-105"
+                  }`}
                 >
-                  JOIN
-                </NeonButton>
-              </div>
-
-              <div className="hidden sm:flex items-center">
-                <NeonButton href="/login" variant="outline" className="text-[11px] md:text-[13px] px-4 md:px-6 py-2 md:py-2.5 font-black tracking-[0.15em] md:tracking-[0.2em] border-2">
-                  LOGIN
-                </NeonButton>
-              </div>
-
-              {/* Mobile menu toggle */}
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex lg:hidden text-primary hover:text-white transition-all p-2.5 items-center justify-center border-2 border-primary/20 rounded-sm bg-primary/5 active:bg-primary/20 relative z-[3000002]"
-                aria-label="Toggle menu"
-              >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
+                  <span className="absolute -left-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 text-cyber-neon transition-all duration-300">[</span>
+                  <span>{link.name}</span>
+                  <span className="absolute -right-3 opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 text-cyber-neon transition-all duration-300">]</span>
+                  {isActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--color-cyber-neon)]" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
-        {/* ── Hacker Ticker Bar ── */}
-        <div className="relative w-full bg-[#050508] border-b border-primary/10 backdrop-blur-sm overflow-hidden flex items-center h-7">
-          {/* Label */}
-          <div className="flex items-center gap-2 px-4 shrink-0 border-r border-primary/20 h-full bg-primary/5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(255,0,0,0.8)]" />
-            <span className="text-[9px] font-mono font-bold tracking-[0.25em] text-primary uppercase whitespace-nowrap">THREAT_FEED</span>
-          </div>
+          {/* Action CTAs */}
+          <div className="flex items-center gap-4">
+            {!isLoading && (
+              isAuthenticated ? (
+                <div className="hidden sm:flex items-center gap-4">
+                  {role && <RoleBadge role={role} />}
+                  
 
-          {/* Scrolling content */}
-          <div className="relative flex-1 overflow-hidden">
-            <motion.div
-              className="flex items-center gap-0 whitespace-nowrap"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{
-                duration: 40,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              {tickerContent.map((item, i) => {
-                const isExternal = item.href.startsWith("http");
-                return (
-                  <Link 
-                    key={i} 
-                    href={item.href} 
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                    className="inline-flex items-center shrink-0 whitespace-nowrap cursor-none"
+
+                  {(role === 'admin' || role === 'superadmin') && (
+                    <InboxButton />
+                  )}
+
+                  <button
+                    onClick={logout}
+                    className="text-[var(--color-cyber-muted)] hover:text-red-500 hover:scale-110 transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+                    title="Logout"
                   >
-                    <span className="text-[11px] font-mono text-primary/70 px-6 tracking-wide hover:text-white transition-colors duration-200">
-                      {item.text}
-                    </span>
-                    <span className="text-primary/20 text-xs select-none">|</span>
-                  </Link>
-                );
-              })}
-            </motion.div>
-          </div>
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="btn-primary text-sm px-5 py-2 hidden sm:flex"
+                >
+                  Member Portal
+                </Link>
+              )
+            )}
 
-          {/* Right fade */}
-          <div className="absolute right-0 top-0 h-7 w-16 bg-gradient-to-l from-black to-transparent pointer-events-none z-10" />
+            {/* Mobile Toggle */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex lg:hidden text-[var(--color-cyber-white)] p-1"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </nav>
 

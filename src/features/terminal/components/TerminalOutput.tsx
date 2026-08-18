@@ -15,18 +15,18 @@ export function TerminalOutput({ history }: TerminalOutputProps) {
         key={i}
         className={`whitespace-pre-wrap flex items-start gap-1 ${
           entry.type === "input"
-            ? "text-primary"
+            ? "text-[var(--color-cyber-neon)]"
             : entry.type === "error"
-              ? "text-red-400"
+              ? "text-red-600"
               : entry.type === "system"
-                ? "text-gray-400"
-                : "text-white"
+                ? "text-[var(--color-cyber-muted)]"
+                : "text-[var(--color-cyber-white)]"
         }`}
       >
         <span>{entry.text}</span>
         {colorMatch && entry.type === "system" && (
           <span
-            className="inline-block w-3 h-3 rounded-sm shrink-0 mt-[3px] border border-white/10"
+            className="inline-block w-3 h-3 rounded-sm shrink-0 mt-[3px] border border-[var(--color-cyber-gray)]"
             style={{ backgroundColor: colorMatch[1] }}
           />
         )}

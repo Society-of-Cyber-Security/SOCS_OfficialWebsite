@@ -1,53 +1,34 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Manrope, Inter, Rubik_Glitch, Silkscreen, Wallpoet, Turret_Road } from "next/font/google";
+import { Space_Grotesk, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/shared/components/layout/Navbar";
 import { Footer } from "@/shared/components/layout/Footer";
 import { ClientProviders } from "@/core/providers/AppProviders";
-import { CustomCursor } from "@/shared/components/ui/CustomCursor";
+import { AuthProvider } from "@/core/context/AuthContext";
 
 const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+  variable: "--font-space",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const firaCode = Fira_Code({
+  variable: "--font-fira",
   subsets: ["latin"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const rubikGlitch = Rubik_Glitch({
-  weight: "400",
-  variable: "--font-rubik-glitch",
-  subsets: ["latin"],
-});
-
-const silkscreen = Silkscreen({
-  weight: ["400", "700"],
-  variable: "--font-silkscreen",
-  subsets: ["latin"],
-});
-
-const wallpoet = Wallpoet({
-  weight: "400",
-  variable: "--font-wallpoet",
-  subsets: ["latin"],
-});
-
-const turretRoad = Turret_Road({
-  weight: ["400", "500", "700"],
-  variable: "--font-turret-road",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
   title: "SOCS — Society of Cyber Security",
-  description: "Society of Cyber Security Network",
+  description: "Society of Cyber Security Network — Research, Hacking, and Defense Community",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  openGraph: {
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({
@@ -58,17 +39,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${manrope.variable} ${inter.variable} ${rubikGlitch.variable} ${silkscreen.variable} ${wallpoet.variable} ${turretRoad.variable} h-full antialiased dark`}
+      className={`${spaceGrotesk.variable} ${firaCode.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-body bg-background text-white overflow-x-hidden" suppressHydrationWarning>
-        <CustomCursor />
+      <body className="min-h-full flex flex-col font-body bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)] overflow-x-hidden selection:bg-[var(--color-cyber-neon)] selection:text-white" suppressHydrationWarning>
         <ClientProviders>
-          <Navbar />
-          <main className="flex-grow flex flex-col items-center">
-            {children}
-          </main>
-          <Footer />
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-grow flex flex-col items-center">
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
         </ClientProviders>
       </body>
     </html>

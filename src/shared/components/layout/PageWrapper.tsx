@@ -14,16 +14,9 @@ export function PageWrapper({ children, className = "" }: PageWrapperProps) {
   }, []);
 
   return (
-    <div className={`relative min-h-screen pt-24 pb-12 w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 ${className}`}>
-      {/* Background layer */}
-      <div className="fixed inset-0 pointer-events-none -z-20 grid-background opacity-20"></div>
-      <div className="fixed inset-0 pointer-events-none -z-20 grid-background-dots opacity-10"></div>
-      
-      {/* Scan line overlay (globally applied utility class or div here) */}
-      <div className="fixed inset-0 pointer-events-none z-50 scan-line opacity-30"></div>
-      
+    <div className={`relative min-h-screen w-full flex flex-col items-center bg-[var(--color-cyber-black)] ${className}`}>
       {/* Page Content */}
-      <div className="relative z-10 w-full animate-fade-up">
+      <div className="relative z-10 w-full flex flex-col">
         {children}
       </div>
     </div>

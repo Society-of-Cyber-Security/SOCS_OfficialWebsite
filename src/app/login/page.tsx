@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { NeonButton } from "@/shared/components/ui/NeonButton";
-import { GlitchText } from "@/shared/components/ui/GlitchText";
-import { Terminal, Shield, Lock, Cpu, Fingerprint, Activity } from "lucide-react";
+import { Shield, Lock, Cpu, Fingerprint, Activity, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [view, setView] = useState<"initial" | "selection">("initial");
@@ -13,151 +12,117 @@ export default function LoginPage() {
 
   const handleInitialClick = () => {
     setLoading(true);
-    // Simulate system decryption
     setTimeout(() => {
       setLoading(false);
       setView("selection");
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <PageWrapper className="flex items-center justify-center min-h-[90vh] !max-w-none !px-0">
-      <div className="w-full flex flex-col items-center justify-center relative px-6">
+    <PageWrapper className="flex items-center justify-center min-h-[85vh] pt-24 pb-32">
+      <div className="w-full max-w-[1000px] mx-auto flex flex-col items-center justify-center relative px-6 z-10">
         <AnimatePresence mode="wait">
           {view === "initial" ? (
             <motion.div
               key="initial"
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2, filter: "blur(20px)" }}
-              className="flex flex-col items-center justify-center py-20 w-full"
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="flex flex-col items-center justify-center w-full"
             >
-              {/* Central Auth Module */}
-              <div className="relative group cursor-pointer flex flex-col items-center" onClick={handleInitialClick}>
-                {/* Hexagon Frame */}
-                <div className="w-80 h-80 flex items-center justify-center relative">
-                    {/* Animated rings */}
-                    <div className="absolute inset-0 border-[3px] border-primary/10 rounded-full animate-[spin_8s_linear_infinite]" />
-                    <div className="absolute inset-6 border-2 border-primary/20 rounded-full animate-[spin_12s_linear_infinite_reverse] border-dashed" />
-                    <div className="absolute inset-12 border border-primary/5 rounded-full animate-[pulse_4s_ease-in-out_infinite]" />
-                    
-                    <div className="z-10 bg-black/90 backdrop-blur-xl border-2 border-primary/40 w-56 h-56 flex flex-col items-center justify-center shadow-[0_0_80px_rgba(200,255,0,0.15)] group-hover:border-primary group-hover:shadow-[0_0_100px_rgba(200,255,0,0.3)] transition-all duration-700"
-                        style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
-                        
-                        {loading ? (
-                             <div className="flex flex-col items-center gap-4">
-                                <Activity className="w-12 h-12 text-primary animate-pulse" />
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[12px] font-mono text-primary tracking-[0.3em] font-black">SECURITY_SCAN</span>
-                                    <span className="text-[8px] font-mono text-primary/50 mt-1">MATCHING_BIO_SIGNATURE...</span>
-                                </div>
-                             </div>
-                        ) : (
-                            <>
-                                <Fingerprint className="w-20 h-20 text-primary/40 group-hover:text-primary transition-all duration-500 transform group-hover:scale-110" />
-                                <div className="mt-6 text-center">
-                                    <div className="text-[11px] font-mono text-primary tracking-[0.4em] font-black group-hover:scale-110 transition-transform">SYSTEM_ACCESS</div>
-                                    <div className="text-[7px] font-mono text-gray-600 mt-2 tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity">Click to Decrypt</div>
-                                </div>
-                            </>
-                        )}
+              {/* Central Auth Interactive Orb Card */}
+              <div 
+                className="stealth-card p-10 sm:p-16 flex flex-col items-center text-center cursor-pointer max-w-lg w-full relative overflow-hidden group border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] hover:border-[var(--color-cyber-white)] transition-colors rounded-sm shadow-sm"
+                onClick={handleInitialClick}
+              >
+                <div className="w-32 h-32 rounded-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] flex items-center justify-center group-hover:border-[var(--color-cyber-white)] transition-all mb-10 relative z-10">
+                  {loading ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <Activity className="w-8 h-8 text-[var(--color-cyber-white)] animate-spin" />
+                      <span className="text-[9px] font-mono font-bold text-[var(--color-cyber-white)] tracking-[0.2em] uppercase">Authenticating</span>
                     </div>
+                  ) : (
+                    <>
+                      <Fingerprint className="w-12 h-12 text-[var(--color-cyber-muted)] group-hover:text-[var(--color-cyber-white)] transition-colors" />
+                    </>
+                  )}
                 </div>
 
-                {/* Corner tags */}
-                <div className="absolute -top-10 -left-10 text-[10px] font-mono text-primary/30 tracking-[0.5em] uppercase [writing-mode:vertical-lr] rotate-180">AUTH_REQUIRED</div>
-                <div className="absolute -bottom-10 -right-10 text-[10px] font-mono text-primary/30 tracking-[0.5em] uppercase [writing-mode:vertical-lr]">NODE_UPLINK</div>
-              </div>
-
-              <div className="mt-20 text-center flex flex-col items-center">
-                <div className="flex items-center gap-3 justify-center mb-6">
-                    <div className="h-[1px] w-20 bg-gradient-to-l from-primary/40 to-transparent" />
-                    <span className="text-primary/80 font-mono text-xs tracking-[0.6em] font-black">SOCS_KERNEL</span>
-                    <div className="h-[1px] w-20 bg-gradient-to-r from-primary/40 to-transparent" />
+                <div className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-6 flex items-center justify-center gap-2 relative z-10">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Secure Access Portal</span>
                 </div>
-                <p className="text-gray-500 font-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
-                  {loading ? "INITIALIZING SECURITY OVERRIDE..." : "IDENTIFY YOURSELF TO THE NETWORK"}
+
+                <h2 className="text-4xl sm:text-5xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter mb-4 relative z-10 leading-none">
+                  Member Portal
+                </h2>
+                
+                <p className="text-[var(--color-cyber-light)] font-body text-sm mb-10 relative z-10 leading-relaxed max-w-sm">
+                  {loading ? "Establishing secure session handshake..." : "Authenticate your identity to access the internal dashboard."}
                 </p>
+
+                <div className="btn-primary w-full py-4 text-xs uppercase tracking-widest flex items-center justify-center gap-3 relative z-10 rounded-sm">
+                  <span>Continue</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="selection"
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full relative z-10"
             >
               {/* Sign In Protocol */}
-              <ProtocolCard
-                id="01"
-                title="RECOVERY_KEY"
-                subtitle="ALREADY REGISTERED"
-                description="Restore your existing presence in the network and synchronize your credentials."
-                ctaText="SIGN_IN"
-                icon={<Lock className="w-8 h-8" />}
-                href="/login/signin"
-              />
+              <div className="stealth-card p-10 md:p-12 h-full flex flex-col justify-between relative overflow-hidden bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] group hover:border-[var(--color-cyber-white)] transition-colors rounded-sm shadow-sm">
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-[var(--color-cyber-dark)] text-[var(--color-cyber-white)] flex items-center justify-center mb-8 border border-[var(--color-cyber-gray)] group-hover:border-[var(--color-cyber-white)] transition-colors rounded-sm">
+                    <Lock className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-[0.2em] block mb-4">
+                    Existing Member
+                  </span>
+                  <h3 className="text-3xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter mb-6">
+                    Sign In
+                  </h3>
+                  <p className="text-[var(--color-cyber-light)] font-body text-sm mb-10 leading-relaxed border-l-2 border-[var(--color-cyber-gray)] pl-4 py-1">
+                    Restore your existing session in the SOCS network and synchronize your credentials and dashboard data.
+                  </p>
+                </div>
+
+                <Link href="/login/signin" className="btn-primary w-full py-4 text-xs uppercase tracking-widest flex items-center justify-center gap-3 relative z-10 rounded-sm mt-auto">
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
 
               {/* Sign Up Protocol */}
-              <ProtocolCard
-                id="02"
-                title="INITIATE_CORE"
-                subtitle="NEW ENTRANT"
-                description="Begin the recruitment protocol and establish your unique cryptographic identity."
-                ctaText="SIGN_UP"
-                icon={<Cpu className="w-8 h-8" />}
-                primary
-                href="/login/signup"
-              />
+              <div className="stealth-card p-10 md:p-12 h-full flex flex-col justify-between relative overflow-hidden bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] group hover:border-[var(--color-cyber-white)] transition-colors rounded-sm shadow-sm">
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-[var(--color-cyber-dark)] text-[var(--color-cyber-white)] flex items-center justify-center mb-8 border border-[var(--color-cyber-gray)] group-hover:border-[var(--color-cyber-white)] transition-colors rounded-sm">
+                    <Cpu className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-mono text-[var(--color-cyber-neon)] uppercase tracking-[0.2em] block mb-4">
+                    New Application
+                  </span>
+                  <h3 className="text-3xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter mb-6">
+                    Apply for Access
+                  </h3>
+                  <p className="text-[var(--color-cyber-light)] font-body text-sm mb-10 leading-relaxed border-l-2 border-[var(--color-cyber-neon)] pl-4 py-1">
+                    Begin the recruitment protocol and establish your unique cryptographic identity in the society network.
+                  </p>
+                </div>
+
+                <Link href="/join" className="btn-primary w-full py-4 text-xs uppercase tracking-widest flex items-center justify-center gap-3 relative z-10 rounded-sm mt-auto">
+                  <span>Apply Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Decorative elements */}
-        <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-20 pointer-events-none">
-            <div className="w-full h-full border border-dashed border-primary/10 rounded-full animate-[ping_8s_linear_infinite]" />
-        </div>
       </div>
     </PageWrapper>
-  );
-}
-
-function ProtocolCard({ 
-    id, title, subtitle, description, ctaText, icon, primary = false, href 
-}: { 
-    id: string; title: string; subtitle: string; description: string; ctaText: string; icon: React.ReactNode; primary?: boolean; href: string;
-}) {
-  return (
-    <div className={`relative group p-[1px] ${primary ? 'bg-primary/40' : 'bg-white/10'} w-full`}
-        style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}>
-        
-        <div className="bg-[#020508] p-8 h-full flex flex-col items-center text-center transition-all duration-300 group-hover:bg-[#03080c]"
-            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 19px), calc(100% - 19px) 100%, 0 100%)" }}>
-            
-            <div className="flex flex-col items-center w-full mb-8">
-                <div className={`p-4 border ${primary ? 'border-primary/30 bg-primary/5 text-primary' : 'border-white/10 bg-white/5 text-gray-400'} group-hover:scale-110 transition-transform duration-500 mb-4`}>
-                    {icon}
-                </div>
-                <span className="text-[10px] font-mono text-gray-700 tracking-widest uppercase">PROTOCOL::{id}</span>
-            </div>
-
-            <div className="mb-2 text-[10px] font-mono text-primary/60 tracking-[0.4em] uppercase">{subtitle}</div>
-            <h3 className="text-xl font-black text-white mb-4 tracking-tighter uppercase">
-                <GlitchText text={title} />
-            </h3>
-            
-            <p className="text-gray-500 text-xs font-mono leading-relaxed mb-10 flex-1">
-                {description}
-            </p>
-
-            <NeonButton 
-                href={href} 
-                variant={primary ? "primary" : "outline"} 
-                className="w-full font-bold text-[10px] tracking-[0.3em] py-4"
-            >
-                {ctaText}
-            </NeonButton>
-        </div>
-    </div>
   );
 }

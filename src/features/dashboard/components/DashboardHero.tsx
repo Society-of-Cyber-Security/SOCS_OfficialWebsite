@@ -17,7 +17,7 @@ export function DashboardHero() {
         {/* Top Status Bar */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-[#6200EA]/30 bg-[#050508]">
           <div className="flex items-center gap-6">
-            <span className="text-primary font-bold text-lg tracking-tighter cursor-default animate-pulse">SOCIETY OF CYBER SECURITY</span>
+            <span className="text-primary font-bold text-lg tracking-tighterer cursor-default animate-pulse">SOCIETY OF CYBER SECURITY</span>
             <div className="hidden md:flex gap-4 text-[10px] text-gray-500 tracking-[0.2em]">
               <span className="hover:text-primary transition-colors cursor-pointer border-b border-primary">TEMPORAL</span>
               <span className="hover:text-primary transition-colors cursor-pointer">OPERATIONS</span>
@@ -40,7 +40,7 @@ export function DashboardHero() {
               <span>CORE_INITIATIVE_V2.5</span>
             </div>
             
-            <h1 className="hero-text-animate text-6xl md:text-8xl font-bold font-grotesk text-white leading-[0.85] mb-8 tracking-tighter">
+            <h1 className="hero-text-animate text-6xl md:text-8xl font-bold font-grotesk text-white leading-[0.85] mb-8 tracking-tighterer">
               THE CYBER <br />
               <span className="text-glow">ARCHITECT</span>
             </h1>
@@ -75,8 +75,8 @@ export function DashboardHero() {
               <div className="absolute inset-0 bg-primary/5 blur-[80px] rounded-full animate-pulse"></div>
               <div className="relative w-full h-full border border-primary/20 bg-[#050508]/60 backdrop-blur-xl rounded-lg p-6 flex flex-col items-center justify-center group overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-                <div className="text-[10px] text-gray-500 absolute top-4 left-4 tracking-tighter font-mono opacity-50 uppercase">ARCHITECTURAL_NODE</div>
-                <div className="text-[10px] text-primary absolute top-4 right-4 tracking-tighter font-bold uppercase">NODE_001_ACTIVE</div>
+                <div className="text-[10px] text-gray-500 absolute top-4 left-4 tracking-tighterer font-mono opacity-50 uppercase">ARCHITECTURAL_NODE</div>
+                <div className="text-[10px] text-primary absolute top-4 right-4 tracking-tighterer font-bold uppercase">NODE_001_ACTIVE</div>
                 
                 <Shield className="w-32 h-32 text-primary/10 absolute animate-pulse" />
                 <div className="relative">
@@ -92,7 +92,7 @@ export function DashboardHero() {
             {/* Sidebar Terminal Log Preview (Overlay style) */}
             <div className="mt-12 w-full dashboard-card p-4 rounded-sm border-l-2 border-l-primary/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Live_Feed // Stream</span>
+                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live_Feed // Stream</span>
                 <div className="flex gap-1">
                   <div className="w-1.5 h-1.5 bg-primary/40 rounded-full"></div>
                   <div className="w-1.5 h-1.5 bg-primary/40 rounded-full"></div>
@@ -122,7 +122,7 @@ export function DashboardHero() {
             <Cpu className="w-6 h-6 text-primary mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-white font-bold text-sm tracking-widest mb-3 uppercase">Quantum Resistant</h3>
             <p className="text-[10px] text-gray-500 leading-relaxed mb-4">Lattice-based cryptography protocols designed to withstand future computational threats.</p>
-            <div className="text-[9px] text-primary/60 font-bold tracking-tighter uppercase border-t border-primary/10 pt-2">
+            <div className="text-[9px] text-primary/60 font-bold tracking-tighterer uppercase border-t border-primary/10 pt-2">
               [ LOAD: 12.4%_SYMMETRIC ]
             </div>
           </div>
@@ -132,7 +132,7 @@ export function DashboardHero() {
             <Zap className="w-6 h-6 text-primary mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-white font-bold text-sm tracking-widest mb-3 uppercase">Decentralized</h3>
             <p className="text-[10px] text-gray-500 leading-relaxed mb-4">Distributed node architecture ensuring no single point of failure within the collective.</p>
-            <div className="flex items-center justify-between text-[9px] font-bold tracking-tighter uppercase border-t border-primary/20 pt-2">
+            <div className="flex items-center justify-between text-[9px] font-bold tracking-tighterer uppercase border-t border-primary/20 pt-2">
               <span className="text-primary">[ NODE COUNT: 24,531 ]</span>
               <Activity className="w-3 h-3 text-primary animate-pulse" />
             </div>
@@ -142,7 +142,7 @@ export function DashboardHero() {
             <Activity className="w-6 h-6 text-primary mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-white font-bold text-sm tracking-widest mb-3 uppercase">Instant Sync</h3>
             <p className="text-[10px] text-gray-500 leading-relaxed mb-4">Real-time ledger propagation across all active global nodes with sub-1ms latency.</p>
-            <div className="text-[9px] text-primary/60 font-bold tracking-tighter uppercase border-t border-primary/10 pt-2 flex justify-between">
+            <div className="text-[9px] text-primary/60 font-bold tracking-tighterer uppercase border-t border-primary/10 pt-2 flex justify-between">
               <span>[ LATENCY: 0.12ms ]</span>
               <Globe className="w-3 h-3" />
             </div>

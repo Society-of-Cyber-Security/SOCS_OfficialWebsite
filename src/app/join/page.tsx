@@ -2,132 +2,140 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { SectionHeader } from "@/shared/components/ui/SectionHeader";
-import { GlowBorder } from "@/shared/components/ui/GlowBorder";
-import { NeonButton } from "@/shared/components/ui/NeonButton";
 import { fadeUpOnScroll } from "@/shared/lib/animations";
+import { ArrowRight, AlertCircle, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/core/context/AuthContext";
+import Link from "next/link";
 
 export default function JoinPage() {
   const formRef = useRef<HTMLDivElement>(null);
-  const [submitted, setSubmitted] = useState(false);
+  
+  // Form State
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { register } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (formRef.current) fadeUpOnScroll(formRef.current);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // No backend yet, just show success state
-    setSubmitted(true);
+    setError("");
+    setIsSubmitting(true);
+    
+    try {
+      await register(name, email, password);
+      router.push("/");
+    } catch (err: any) {
+      setError(err?.data?.error || err.message || "Registration failed");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <PageWrapper>
-      <div className="pt-10 pb-20 max-w-3xl mx-auto">
-        <SectionHeader 
-          title="Init Connection" 
-          subtitle="Apply to join the SOCS network. We're looking for passionate hackers and builders."
-        />
-        
-        <div ref={formRef} className="mt-12 opacity-0">
-          <GlowBorder intensity="medium">
-            <div className="bg-background/80 p-6 md:p-10 rounded">
-              {submitted ? (
-                <div className="text-center py-20">
-                  <div className="text-primary text-5xl mb-6 mb-4">
-                    ✓
-                  </div>
-                  <h3 className="font-grotesk text-2xl text-white mb-2">Payload Delivered</h3>
-                  <p className="font-jetbrains text-gray-400">
-                    We've received your data. Stand by for further instructions from root.
-                  </p>
-                  <NeonButton 
-                    onClick={() => setSubmitted(false)} 
-                    variant="outline" 
-                    className="mt-8"
-                  >
-                    Return
-                  </NeonButton>
+    <PageWrapper className="pt-32 pb-24 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--color-cyber-blue)] to-transparent opacity-20"></div>
+      <div className="absolute bottom-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--color-cyber-blue)] to-transparent opacity-10"></div>
+      
+      <div className="max-w-xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center p-4 bg-[var(--color-cyber-dark)] rounded-full mb-6 border border-[var(--color-cyber-gray)]">
+            <UserPlus className="w-8 h-8 text-[var(--color-cyber-blue)]" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter uppercase mb-4">
+            Join the Network
+          </h1>
+          <p className="text-[var(--color-cyber-muted)] font-mono text-sm max-w-md mx-auto">
+            Create an account to propose projects, resources, and events for the Society of Cyber Security.
+          </p>
+        </div>
+
+        <div ref={formRef} className="opacity-0 relative">
+          <div className="stealth-card p-8 md:p-12 border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm shadow-sm relative overflow-hidden">
+            
+            {/* Decorative Corner Elements */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[var(--color-cyber-blue)] opacity-50"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[var(--color-cyber-blue)] opacity-50"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[var(--color-cyber-blue)] opacity-50"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[var(--color-cyber-blue)] opacity-50"></div>
+
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+              {error && (
+                <div className="mb-6 p-4 border border-cyber-red/30 bg-cyber-red/10 text-cyber-red text-sm font-mono flex items-start gap-3 rounded-sm">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span>{error}</span>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="block text-primary font-jetbrains text-sm">
-                        &gt; FULL_NAME
-                      </label>
-                      <input 
-                        required 
-                        type="text" 
-                        className="w-full bg-[#111] border border-gray-700 rounded p-3 text-white font-jetbrains focus:outline-none focus:border-primary focus:shadow-[0_0_10px_rgba(0,255,65,0.2)] transition-all"
-                        placeholder="Anonymous"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="block text-primary font-jetbrains text-sm">
-                        &gt; CONTACT_EMAIL
-                      </label>
-                      <input 
-                        required 
-                        type="email" 
-                        className="w-full bg-[#111] border border-gray-700 rounded p-3 text-white font-jetbrains focus:outline-none focus:border-primary focus:shadow-[0_0_10px_rgba(0,255,65,0.2)] transition-all"
-                        placeholder="user@network.local"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-primary font-jetbrains text-sm">
-                      &gt; EXPERIENCE_LEVEL
-                    </label>
-                    <div className="relative">
-                      <select required className="w-full bg-[#111] border border-gray-700 rounded p-3 text-white font-jetbrains focus:outline-none focus:border-primary appearance-none">
-                        <option value="" disabled selected>Select level...</option>
-                        <option value="beginner">Beginner (Checking the doors)</option>
-                        <option value="intermediate">Intermediate (Writing scripts)</option>
-                        <option value="advanced">Advanced (Popping shells)</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
-                        ▼
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-primary font-jetbrains text-sm">
-                      &gt; PRIMARY_SKILLS
-                    </label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-[#111] border border-gray-700 rounded p-3 text-white font-jetbrains focus:outline-none focus:border-primary focus:shadow-[0_0_10px_rgba(0,255,65,0.2)] transition-all"
-                      placeholder="e.g. Python, Linux, Web Exploitation (comma separated)"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-primary font-jetbrains text-sm">
-                      &gt; MESSAGE_OPTIONAL
-                    </label>
-                    <textarea 
-                      rows={4}
-                      className="w-full bg-[#111] border border-gray-700 rounded p-3 text-white font-jetbrains focus:outline-none focus:border-primary focus:shadow-[0_0_10px_rgba(0,255,65,0.2)] transition-all"
-                      placeholder="Why do you want to join SOCS?"
-                    ></textarea>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-gray-800">
-                    <button 
-                      type="submit" 
-                      className="w-full bg-primary/20 border border-primary text-primary font-jetbrains uppercase tracking-widest py-4 rounded hover:bg-primary/30 hover:shadow-glow transition-all"
-                    >
-                      [ Execute Transmission ]
-                    </button>
-                  </div>
-                </form>
               )}
-            </div>
-          </GlowBorder>
+
+              <div className="space-y-3">
+                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
+                  Full Name
+                </label>
+                <input 
+                  required 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
+                  Contact Email
+                </label>
+                <input 
+                  required 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
+                  placeholder="user@university.edu"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
+                  Password
+                </label>
+                <input 
+                  required 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+              
+              <div className="pt-6 border-t border-[var(--color-cyber-gray)]">
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer rounded-sm disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <span>{isSubmitting ? 'Registering...' : 'Create Account'}</span>
+                  {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                </button>
+              </div>
+
+              <div className="text-center pt-4">
+                <p className="text-xs font-mono text-[var(--color-cyber-muted)]">
+                  Already have an account? <Link href="/login" className="text-[var(--color-cyber-white)] hover:text-[var(--color-cyber-blue)] underline underline-offset-4 decoration-[var(--color-cyber-gray)] transition-colors">Sign in here</Link>
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </PageWrapper>

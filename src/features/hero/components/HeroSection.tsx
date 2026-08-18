@@ -1,96 +1,138 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { NeonButton } from "@/shared/components/ui/NeonButton";
 import gsap from "gsap";
-import { GlitchText } from "@/shared/components/ui/GlitchText";
-import { ScrambleText } from "@/shared/components/ui/ScrambleText";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
+import { Marquee } from "@/shared/components/ui/Marquee";
+import { motion } from "framer-motion";
+import { useAuth } from "@/core/context/AuthContext";
 
-const Globe3D = dynamic(
-  () => import("@/features/visualizations/components/Globe3D").then(m => ({ default: m.Globe3D })),
+const NodeNetwork3D = dynamic(
+  () => import("@/features/visualizations/components/NodeNetwork3D").then(m => ({ default: m.NodeNetwork3D })),
   {
     ssr: false, 
     loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-[#030608] border border-primary/20">
-        <span className="text-[10px] text-primary/40 font-mono tracking-widest animate-pulse">BOOTING GLOBAL_INTERFACE...</span>
+      <div className="w-full h-full flex items-center justify-center bg-[var(--color-cyber-black)] relative overflow-hidden">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 animate-spin-slow">
+          <circle cx="30" cy="30" r="28" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+          <circle cx="30" cy="30" r="14" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+          <line x1="30" y1="2" x2="30" y2="16" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+          <line x1="30" y1="44" x2="30" y2="58" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+          <line x1="2" y1="30" x2="16" y2="30" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+          <line x1="44" y1="30" x2="58" y2="30" stroke="var(--color-cyber-white)" strokeWidth="1"/>
+        </svg>
       </div>
     )
   }
 );
 
 export function HeroSection() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const subtextRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const visualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline();
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
 
-    tl.fromTo(headingRef.current,
-      { opacity: 0, x: -30 },
-      { opacity: 1, x: 0, duration: 1, ease: "power4.out" }
-    );
+      tl.fromTo(".hero-reveal",
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power3.out" }
+      );
 
-    tl.fromTo(subtextRef.current,
-      { opacity: 0, x: -20 },
-      { opacity: 1, x: 0, duration: 0.8, ease: "power2.out" },
-      "-=0.6"
-    );
+      tl.fromTo(visualRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 2, ease: "power2.out" },
+        "-=0.5"
+      );
+    }, contentRef);
 
-    tl.fromTo(ctaRef.current,
-      { opacity: 0, scale: 0.9 },
-      { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.7)" },
-      "-=0.4"
-    );
-
-    tl.fromTo(mapRef.current,
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 1, ease: "power3.out" },
-      "-=0.8"
-    );
-
-    return () => { tl.kill(); };
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="relative pt-8 md:pt-12 pb-12 min-h-[85vh] flex flex-col justify-start overflow-hidden">
-      <div className="absolute inset-0 dot-grid opacity-20 -z-20" />
-      <div className="absolute inset-0 motherboard-lines opacity-10 -z-20" />
+    <>
+      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 min-h-[90vh] flex flex-col justify-center overflow-hidden w-full bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)]">
+        
+        <div ref={contentRef} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12">
+          
+          {/* Left Column: Hero Content */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            
+            <div className="hero-reveal mb-8">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1.5 rounded-sm">
+                Research • Defense • Community
+              </span>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-16 items-center z-10 w-full mt-2 md:mt-10">
-        <div className="text-left w-full min-w-0 order-2 lg:order-1 flex flex-col justify-center md:mt-1">
-          <div className="mb-5 inline-flex items-center gap-3 px-3 py-1 bg-primary/10 border border-primary/20 text-[10px] md:text-[11px] text-primary tracking-[0.4em] md:tracking-[0.55em] font-jetbrains uppercase w-fit">
-            <span className="w-2 h-2 bg-primary animate-pulse" />
-            <span>Society of Cyber Security</span>
+            {/* Main Hero Headline */}
+            <h1 className="hero-reveal font-heading font-black text-[clamp(4.5rem,9vw,8rem)] leading-[0.95] tracking-tighter mb-8">
+              Society of <br/>
+              <span className="text-gradient-multi font-display font-bold tracking-tighter text-[clamp(5rem,10vw,9rem)] leading-[0.9] pr-2">Cyber</span> <br/>
+              Security.
+            </h1>
+
+            {/* Subtext */}
+            <p className="hero-reveal font-body text-lg md:text-xl text-[var(--color-cyber-light)] max-w-xl mb-12 leading-relaxed">
+              We are an interdisciplinary organization dedicated to the exploration, research, and dissemination of computer security knowledge.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="hero-reveal flex flex-col sm:flex-row gap-4 mb-16">
+              {!isAuthenticated && (
+                <Link href="/join" className="btn-primary px-8 py-4 text-sm uppercase tracking-widest rounded-sm">
+                  Apply for Membership
+                </Link>
+              )}
+              <Link href="/projects" className="btn-outline px-8 py-4 text-sm uppercase tracking-widest rounded-sm">
+                View Initiatives <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </div>
+
+            {/* Metrics List */}
+            <div className="hero-reveal flex flex-col sm:flex-row gap-8 pt-8 border-t border-[var(--color-cyber-gray)]">
+              <div className="flex flex-col gap-1">
+                <span className="font-heading font-bold text-3xl">42+</span>
+                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">Active Members</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-heading font-bold text-3xl">15+</span>
+                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">Research Projects</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-heading font-bold text-3xl text-[var(--color-cyber-neon)]">08</span>
+                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">CTF Victories</span>
+              </div>
+            </div>
           </div>
 
-          <h1 ref={headingRef} className="text-4xl sm:text-5xl md:text-6xl xl:text-[5rem] font-bold font-grotesk text-white mb-5 tracking-tighter leading-[1] break-words">
-            <GlitchText text="THE CYBER" as="span" className="block text-gray-400" intensity="low" />
-            <GlitchText text="ARCHITECTS" as="span" className="text-primary text-glow" intensity="low" />
-          </h1>
-
-          <p ref={subtextRef} className="max-w-lg text-gray-300 font-jetbrains text-sm md:text-base mb-8 leading-relaxed opacity-0">
-            <ScrambleText text="Uniting elite researchers, ethical hackers, and security engineers. Learn. Break. Secure. Repeat." delay={1000} />
-          </p>
-
-          <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 opacity-0">
-            <NeonButton href="/contact" variant="primary" className="px-8 py-3.5 font-bold text-sm md:text-base">
-              Join Us
-            </NeonButton>
-            <NeonButton href="/projects" variant="outline" className="px-8 py-3.5 text-sm md:text-base">
-              View Projects
-            </NeonButton>
+          {/* Right Column: 3D Visualization */}
+          <div className="lg:col-span-5 relative flex items-center justify-center min-h-[400px]">
+            <div ref={visualRef} className="w-full aspect-square relative lg:scale-110 xl:scale-125 z-0">
+              <NodeNetwork3D />
+              
+              {/* Subtle Decorative Elements */}
+              <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-[var(--color-cyber-neon)] opacity-60" />
+              <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-[var(--color-cyber-cyan)] opacity-60" />
+            </div>
           </div>
+
         </div>
+      </section>
 
-        <div ref={mapRef} className="order-1 lg:order-2 w-full h-[320px] sm:h-[450px] lg:h-[500px] xl:h-[650px] relative flex items-center justify-center opacity-0 mb-8 lg:mb-0">
-          <div className="w-full h-full">
-            <Globe3D />
-          </div>
-        </div>
+      {/* Marquee Strip */}
+      <div className="w-full bg-[#E5E7EB] py-5 border-y border-[#E5E7EB] overflow-hidden">
+        <Marquee className="[--gap:4rem]" repeat={10} pauseOnHover>
+          {["Ethical Hacking", "CTF Champions", "Research-Led", "Open Source", "OSINT", "Reverse Engineering", "Cryptography", "Network Security"].map((text, i) => (
+            <div key={i} className="flex items-center gap-16">
+              <span className="text-[var(--color-cyber-black)] font-mono text-base md:text-lg font-bold uppercase tracking-[0.2em] opacity-80">{text}</span>
+              <span className="w-2 h-2 bg-cyber-green rounded-full" />
+            </div>
+          ))}
+        </Marquee>
       </div>
-    </section>
+    </>
   );
 }

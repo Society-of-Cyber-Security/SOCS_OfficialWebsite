@@ -2,12 +2,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TextPlugin } from "gsap/TextPlugin";
 
-// Register ScrollTrigger and TextPlugin immediately if in browser
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, TextPlugin);
 }
 
-// Function export for explicit registration if needed
 export const registerGSAP = () => {
   if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger, TextPlugin);
@@ -17,14 +15,14 @@ export const registerGSAP = () => {
 export const fadeUpOnScroll = (selector: string | Element | NodeListOf<Element>) => {
   return gsap.fromTo(
     selector,
-    { opacity: 0, y: 30 },
+    { opacity: 0, y: 24 },
     {
       opacity: 1,
       y: 0,
-      duration: 1.2,
-      ease: "power2.out",
+      duration: 0.8,
+      ease: "power3.out",
       scrollTrigger: {
-        trigger: selector,
+        trigger: selector as any,
         start: "top 85%",
         toggleActions: "play none none reverse",
       },
@@ -32,29 +30,60 @@ export const fadeUpOnScroll = (selector: string | Element | NodeListOf<Element>)
   );
 };
 
-export const staggerCardsOnScroll = (containerSelector: string | Element) => {
+export const brawlPopIn = (element: string | Element, delay = 0) => {
   return gsap.fromTo(
-    typeof containerSelector === "string" ? `${containerSelector} > *` : (containerSelector as Element).children,
-    { opacity: 0, y: 20 },
+    element,
+    { opacity: 0, scale: 0.8, y: 20 },
+    {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      duration: 0.7,
+      delay,
+      ease: "back.out(2)",
+    }
+  );
+};
+
+export const staggerCardsOnScroll = (containerSelector: string | Element) => {
+  const elements = typeof containerSelector === "string" 
+    ? `${containerSelector} > *` 
+    : (containerSelector as Element).children;
+
+  return gsap.fromTo(
+    elements,
+    { opacity: 0, y: 30, scale: 0.95 },
     {
       opacity: 1,
       y: 0,
-      duration: 1.0,
-      stagger: 0.15,
-      ease: "power2.out",
+      scale: 1,
+      duration: 0.65,
+      stagger: 0.1,
+      ease: "back.out(1.4)",
       scrollTrigger: {
-        trigger: containerSelector,
-        start: "top 80%",
+        trigger: containerSelector as any,
+        start: "top 85%",
         toggleActions: "play none none reverse",
       },
     }
   );
 };
 
-export const typewriterEffect = (element: Element, text: string, speed = 0.05) => {
+export const floatingElement = (element: Element | string, distance = 8, duration = 3) => {
+  return gsap.to(element, {
+    y: `-=${distance}`,
+    rotation: "+=2",
+    duration,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut",
+  });
+};
+
+export const typewriterEffect = (element: Element, text: string, speed = 0.04) => {
   element.textContent = "";
   return gsap.to(element, {
-    text: text, // requires TextPlugin if using text param natively, or we do manual
+    text: text,
     duration: text.length * speed,
     ease: "none",
   });
@@ -62,19 +91,19 @@ export const typewriterEffect = (element: Element, text: string, speed = 0.05) =
 
 export const glitchReveal = (element: Element | string) => {
   const tl = gsap.timeline();
-  tl.to(element, { opacity: 0.4, duration: 0.15, x: -2 })
-    .to(element, { opacity: 1, duration: 0.15, x: 2 })
-    .to(element, { opacity: 0.6, duration: 0.15, x: -1 })
-    .to(element, { opacity: 1, duration: 0.15, x: 0 });
+  tl.fromTo(element, 
+    { opacity: 0, scale: 0.96 }, 
+    { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }
+  );
   return tl;
 };
 
-export const animateCounter = (element: Element, target: number, duration = 2) => {
+export const animateCounter = (element: Element, target: number, duration = 1.8) => {
   const obj = { val: 0 };
   return gsap.to(obj, {
     val: target,
     duration,
-    ease: "power1.out",
+    ease: "power2.out",
     onUpdate: () => {
       element.innerHTML = Math.round(obj.val).toString();
     },

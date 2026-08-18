@@ -7,71 +7,54 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-primary/20 bg-background/80 backdrop-blur-md relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-4 mb-6 group">
-              <div className="relative w-12 h-12 flex items-center justify-center overflow-hidden border border-primary/20 bg-black/40 p-1 group-hover:border-primary transition-colors duration-300"
-                style={{ clipPath: "polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
-                <img src="/assets/logo.png" alt="SOCS Logo" className="w-full h-full object-contain" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="font-jetbrains text-2xl font-black text-white tracking-[0.1em] group-hover:text-primary transition-colors duration-200">
-                  SOCS
-                </span>
-                <span className="text-[8px] text-primary/40 tracking-[0.5em] font-mono">ENCRYPTED_SOCIETY</span>
-              </div>
+    <footer className="border-t border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] relative z-10 w-full overflow-hidden text-[var(--color-cyber-light)]">
+
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          
+          {/* Brand & Socials */}
+          <div className="flex flex-col space-y-4">
+            <Link href="/" className="inline-flex flex-col group w-fit">
+              <span className="font-heading font-black text-3xl text-[var(--color-cyber-white)] tracking-tighterer leading-none group-hover:text-[var(--color-cyber-neon)] transition-colors">
+                SOCS
+              </span>
+              <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono font-medium tracking-[0.15em] uppercase mt-1.5">
+                Society of Cyber Security
+              </span>
             </Link>
-            <p className="text-gray-400 font-jetbrains text-sm max-w-md mb-8 leading-relaxed">
-              Society of Cyber Security. Uniting the elite, pushing boundaries, and securing the network. Join us and upgrade your payload.
-            </p>
-            <div className="flex items-center space-x-4">
-              <a href="https://github.com/Society-of-Cyber-Security" target="_blank" rel="noopener noreferrer" className="p-2.5 border border-gray-800 bg-white/5 rounded hover:border-primary hover:text-primary text-gray-400 transition-all">
-                <GithubIcon className="w-5 h-5" />
+
+            <div className="flex items-center space-x-5 pt-2">
+              <a href="https://github.com/Society-of-Cyber-Security" target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors" aria-label="GitHub">
+                <GithubIcon className="w-4 h-4" />
               </a>
-              <a href="https://discord.gg/2DbssC8t" target="_blank" rel="noopener noreferrer" className="p-2.5 border border-gray-800 bg-white/5 rounded hover:border-primary hover:text-primary text-gray-400 transition-all">
-                <MessageSquare className="w-5 h-5" />
+              <a href="https://discord.gg/2DbssC8t" target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors" aria-label="Discord">
+                <MessageSquare className="w-4 h-4" />
               </a>
-              <a href="https://www.instagram.com/socs_ru/" target="_blank" rel="noopener noreferrer" className="p-2.5 border border-gray-800 bg-white/5 rounded hover:border-primary hover:text-primary text-gray-400 transition-all" title="Instagram">
-                <InstagramIcon className="w-5 h-5" />
+              <a href="https://www.instagram.com/socs_ru/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors" aria-label="Instagram">
+                <InstagramIcon className="w-4 h-4" />
               </a>
-              <a href="https://www.linkedin.com/company/society-of-cyber-security/posts/?feedView=all" target="_blank" rel="noopener noreferrer" className="p-2.5 border border-gray-800 bg-white/5 rounded hover:border-primary hover:text-primary text-gray-400 transition-all">
-                <LinkedinIcon className="w-5 h-5" />
+              <a href="https://www.linkedin.com/company/society-of-cyber-security/posts/?feedView=all" target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors" aria-label="LinkedIn">
+                <LinkedinIcon className="w-4 h-4" />
               </a>
             </div>
           </div>
           
-          <div>
-            <h3 className="font-jetbrains text-white font-bold mb-4 flex items-center">
-              <span className="text-primary mr-2">/</span> Navigate
-            </h3>
-            <ul className="space-y-2 font-jetbrains text-sm">
-              <li><Link href="/team" className="text-gray-400 hover:text-primary transition-colors">Team</Link></li>
-              <li><Link href="/projects" className="text-gray-400 hover:text-primary transition-colors">Projects</Link></li>
-              <li><Link href="/events" className="text-gray-400 hover:text-primary transition-colors">Events</Link></li>
-              <li><Link href="/resources" className="text-gray-400 hover:text-primary transition-colors">Resources</Link></li>
-            </ul>
+          {/* Compact Navigation */}
+          <div className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-widest text-[var(--color-cyber-muted)]">
+            <Link href="/team" className="hover:text-[var(--color-cyber-white)] transition-colors">Team</Link>
+            <Link href="/projects" className="hover:text-[var(--color-cyber-white)] transition-colors">Initiatives</Link>
+            <Link href="/events" className="hover:text-[var(--color-cyber-white)] transition-colors">Events</Link>
+            <Link href="/gallery" className="hover:text-[var(--color-cyber-white)] transition-colors">Gallery</Link>
+            <Link href="/resources" className="hover:text-[var(--color-cyber-white)] transition-colors">Resources</Link>
+            <Link href="/contact" className="hover:text-[var(--color-cyber-white)] transition-colors">Contact</Link>
           </div>
           
-          <div>
-            <h3 className="font-jetbrains text-white font-bold mb-4 flex items-center">
-              <span className="text-primary mr-2">/</span> System
-            </h3>
-            <p className="text-primary/60 font-jetbrains text-xs mb-2">
-              &gt; STATUS: ONLINE <span className="inline-block w-2 h-2 rounded-full bg-primary ml-1 shadow-[0_0_5px_#C8FF00]"></span>
-            </p>
-            <p className="text-primary/60 font-jetbrains text-xs mb-2">
-              &gt; VERSION: 2.0.4
-            </p>
-            <p className="text-gray-500 font-jetbrains text-xs mt-8">
-              &gt; connection terminated.
-            </p>
-          </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-800 flex justify-center items-center font-jetbrains text-sm text-gray-500 text-center">
-          <p>© {currentYear} Society of Cyber Security. All rights reserved.</p>
+        {/* Copyright */}
+        <div className="mt-12 pt-6 border-t border-[var(--color-cyber-gray)] flex flex-col sm:flex-row justify-between items-center gap-4 text-[9px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
+          <p>© {currentYear} SOCS. ALL RIGHTS RESERVED.</p>
+          <p>BUILT ON RESEARCH AND INNOVATION.</p>
         </div>
       </div>
     </footer>

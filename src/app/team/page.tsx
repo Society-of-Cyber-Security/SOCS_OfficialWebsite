@@ -1,20 +1,78 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
 import { teamMembers } from "@/core/config/team";
-import { Search, Activity, Globe } from "lucide-react";
-
-import { GlitchText } from "@/shared/components/ui/GlitchText";
-import { EncryptedText } from "@/shared/components/ui/EncryptedText";
-import { HoneypotLink } from "@/shared/components/ui/HoneypotLink";
+import { Search, Plus, Shield, Check, User as UserIcon } from "lucide-react";
 import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
-import { CollectiveCard } from "@/features/team/components/CollectiveCard";
+import { TeamCard } from "@/shared/components/cards/TeamCard";
+import { useAuth } from "@/core/context/AuthContext";
+import { fetchApi } from "@/shared/lib/api";
 
 export default function TeamPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { isAuthenticated, role, isLoading } = useAuth();
+  const [users, setUsers] = useState<any[]>([]);
+  const [isManaging, setIsManaging] = useState(false);
   
-  const filteredMembers = teamMembers;
+  const filteredMembers = teamMembers.filter((m) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      m.name.toLowerCase().includes(q) ||
+      m.role.toLowerCase().includes(q) ||
+      m.skills?.some(s => s.toLowerCase().includes(q))
+    );
+  });
+
+  useEffect(() => {
+    if (isAuthenticated && (role === "superadmin" || role === "admin") && isManaging) {
+      fetchUsers();
+    }
+  }, [isAuthenticated, role, isManaging]);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetchApi('/users');
+      if (res && res.success) {
+        setUsers(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const changeRole = async (id: string, newRole: string) => {
+    try {
+      const res = await fetchApi(`/users/${id}/role`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (res && res.success) {
+        fetchUsers();
+      } else {
+        alert(res?.error || "Failed to change role");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const removeUser = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    try {
+      const res = await fetchApi(`/users/${id}`, {
+        method: "DELETE",
+      });
+      if (res && res.success) {
+        fetchUsers();
+      } else {
+        alert(res?.error || "Failed to remove user");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
 
   return (
     <PageWrapper className="pt-24 pb-32">
@@ -24,66 +82,132 @@ export default function TeamPage() {
         entityType="NODE" 
       />
 
-
-      <div className="max-w-7xl mx-auto px-4 z-10 relative">
+      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 z-10 relative">
         {/* Header Section */}
-        <div className="mb-10 md:mb-16 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
-          <div className="w-full">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-grotesk text-white tracking-tighter mb-4 break-words leading-tight flex flex-wrap items-center gap-x-4">
-              <GlitchText text="THE" as="span" intensity="high" />
-              <GlitchText text="SENTINELS" as="span" intensity="high" />
+        <div className="mb-12 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-[var(--color-cyber-gray)] pb-8 relative">
+          <div>
+            <div className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-4">
+              Collective Roster
+            </div>
+            <h1 className="font-heading font-black text-[clamp(4rem,8vw,7rem)] text-cyber-yellow tracking-tighter leading-[0.9]">
+              The <br className="hidden sm:block" /> Sentinels
             </h1>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 text-[10px] text-primary/40 font-jetbrains tracking-[0.3em] uppercase">
-                <Activity className="w-3 h-3" />
-                <EncryptedText>SOCS_COLLECTIVE_DIRECTORY</EncryptedText>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-                <HoneypotLink label="ACCESS_DATABANK_NODE" />
-            </div>
+            <p className="font-body text-sm md:text-base text-[var(--color-cyber-light)] mt-6 max-w-xl leading-relaxed">
+              Meet the security architects, researchers, and engineers driving the SOCS network forward.
+            </p>
           </div>
 
-          <div className="w-full lg:w-auto flex flex-col gap-4 items-start lg:items-end mt-8 md:mt-0">
-            <div className="relative w-full lg:w-[400px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-[320px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-cyber-muted)]" />
               <input 
-                 type="text" 
-                 placeholder="FILTER_BY_OPERATOR_ID_OR_SPECIALITY..." 
-                 className="w-full bg-black/40 border border-white/10 rounded-sm px-12 py-3 text-xs font-jetbrains text-white outline-none focus:border-primary/40 focus:bg-primary/5 transition-all placeholder:text-gray-700 uppercase"
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search operator or skill..." 
+                className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] pl-12 pr-4 py-3 text-xs font-mono text-[var(--color-cyber-white)] outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
               />
             </div>
-            
 
-            <div className="flex w-full lg:w-auto mt-2 lg:mt-0 gap-3">
+            {isAuthenticated && (role === "superadmin" || role === "admin") && (
+              <button 
+                onClick={() => setIsManaging(!isManaging)}
+                className="btn-primary px-6 py-3 text-xs uppercase tracking-widest flex items-center justify-center shrink-0 rounded-sm"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                <span>{isManaging ? "Exit Management" : "Manage Access"}</span>
+              </button>
+            )}
+
+            {isAuthenticated && (role === 'admin' || role === 'superadmin') && (
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-6 py-2.5 text-[10px] font-bold tracking-[0.2em] text-primary hover:bg-primary hover:text-black transition-all duration-300 group"
-                style={{ clipPath: "polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
+                className="btn-primary px-6 py-3 text-xs uppercase tracking-widest flex items-center justify-center shrink-0 rounded-sm"
               >
-                <span className="group-hover:rotate-90 transition-transform">+</span>
-                <span>ADD_NODE</span>
+                <Plus className="w-4 h-4 mr-2" />
+                <span>Add Member</span>
               </button>
+            )}
+          </div>
+        </div>
+
+        {isManaging && (role === "superadmin" || role === "admin") ? (
+          <div className="mb-16">
+            <h2 className="font-heading text-2xl text-[var(--color-cyber-white)] uppercase mb-6 flex items-center gap-3">
+              <Shield className="w-6 h-6 text-[var(--color-cyber-neon)]" />
+              Access Control Protocol
+            </h2>
+            <div className="overflow-x-auto border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm">
+              <table className="w-full text-left font-mono text-sm min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] text-xs uppercase tracking-widest">
+                    <th className="px-6 py-4">Operator</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Clearance</th>
+                    <th className="px-6 py-4">Modify Access</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u._id} className="border-b border-[var(--color-cyber-gray)] hover:bg-[var(--color-cyber-dark)] transition-colors">
+                      <td className="px-6 py-4 text-[var(--color-cyber-white)] font-bold">{u.name}</td>
+                      <td className="px-6 py-4 text-[var(--color-cyber-light)]">{u.email}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-[10px] uppercase tracking-widest border rounded-sm ${u.role === 'superadmin' ? 'border-cyber-red text-cyber-red' : u.role === 'admin' ? 'border-[var(--color-cyber-neon)] text-[var(--color-cyber-neon)]' : 'border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)]'}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <select 
+                          value={u.role} 
+                          onChange={(e) => changeRole(u._id, e.target.value)}
+                          disabled={role === 'admin' && u.role === 'superadmin'}
+                          className="bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] text-[var(--color-cyber-white)] text-xs px-3 py-1 outline-none disabled:opacity-50"
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                          {role === 'superadmin' && <option value="superadmin">Super Admin</option>}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => removeUser(u._id)}
+                          disabled={role === 'admin' && u.role === 'superadmin'}
+                          className="text-xs uppercase tracking-widest text-cyber-red hover:bg-cyber-red/10 px-3 py-1 rounded-sm transition-colors border border-transparent hover:border-cyber-red/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-
-        {/* Directory Presentation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredMembers.map((member, i) => (
-            <CollectiveCard key={member.slug} member={member} delay={i} />
-          ))}
-        </div>
-
-        {/* Floating Footer Detail */}
-        <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-[8px] text-gray-700 font-mono tracking-widest uppercase text-center md:text-left">
-          <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-            <span className="text-primary/40 leading-none">● {filteredMembers.length} ACTIVE OPERATORS</span>
-            <span className="leading-none">SYST_LOG: DIRECTORY_LOAD_OK</span>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+            {filteredMembers.map((member) => (
+              <TeamCard key={member.slug} member={member} />
+            ))}
           </div>
-          <div className="leading-none text-center md:text-right">
-            © 2024 SOCS // ENCRYPTED_ACCESS_ONLY
+        )}
+
+        {!isManaging && filteredMembers.length === 0 && (
+          <div className="py-24 text-center bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)]">
+            <p className="text-[var(--color-cyber-light)] font-body text-sm">No members found matching "{searchQuery}".</p>
+          </div>
+        )}
+
+        {/* Footer Log */}
+        <div className="mt-20 pt-6 border-t border-[var(--color-cyber-gray)] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 bg-[var(--color-cyber-neon)] rounded-full animate-pulse shadow-[0_0_8px_var(--color-cyber-neon)]" />
+            <span>{isManaging ? users.length : filteredMembers.length} ACTIVE MEMBERS SYNCHRONIZED</span>
+          </div>
+          <div className="text-[var(--color-cyber-muted)]">
+            SOCS DIRECTORY // VERIFIED
           </div>
         </div>
       </div>

@@ -4,13 +4,6 @@ import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 
-/**
- * 3D Hacker Mask Visualization - Globe Logic Edition
- * Uses the same architecture as Globe3D:
- * 1. Continents/Features are represented by Dots.
- * 2. Empty spaces/Skin are represented by a Grid/Wireframe.
- * 3. Flat but 3D (Subtle curvature, no egg shape).
- */
 export function HackerMask3D() {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -24,7 +17,7 @@ export function HackerMask3D() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 280;
+    camera.position.z = 250;
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -38,118 +31,109 @@ export function HackerMask3D() {
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    const maskRoot = new THREE.Group();
-    maskRoot.position.y = 10; 
-    maskRoot.position.x = 0; // Moved closer to the card on the left
-    scene.add(maskRoot);
+    const coreGroup = new THREE.Group();
+    scene.add(coreGroup);
 
-    const colorPrimary = new THREE.Color(0xc8ff00); // Neon Green
+    // Primary Theme Color (Cyan)
+    const colorPrimary = new THREE.Color(0x00F0FF);
+    // Accent Color (Magenta)
+    const colorAccent = new THREE.Color(0xFF003C);
 
-    // --- 1. Load Mask Silhouette for Feature Sampling ---
-    const maskImg = new Image();
-    maskImg.crossOrigin = "Anonymous";
-    maskImg.src = "/assets/mask.png";
+    // 1. Inner Glowing Core
+    const innerGeo = new THREE.IcosahedronGeometry(30, 2);
+    const innerMat = new THREE.MeshBasicMaterial({
+      color: colorAccent,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.8
+    });
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+    coreGroup.add(innerMesh);
+
+    // 2. Outer Wireframe Shell
+    const outerGeo = new THREE.IcosahedronGeometry(45, 1);
+    const outerMat = new THREE.MeshBasicMaterial({
+      color: colorPrimary,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.4
+    });
+    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
+    coreGroup.add(outerMesh);
+
+    // 3. Orbiting Data Particles
+    const particleGeo = new THREE.BufferGeometry();
+    const particleCount = 400;
+    const posArray = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    for(let i = 0; i < particleCount * 3; i+=3) {
+      // Random position in a spherical shell
+      const r = 60 + Math.random() * 40;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      
+      posArray[i] = r * Math.sin(phi) * Math.cos(theta);
+      posArray[i+1] = r * Math.sin(phi) * Math.sin(theta);
+      posArray[i+2] = r * Math.cos(phi);
+
+      // Mix cyan and magenta
+      const mixedColor = Math.random() > 0.8 ? colorAccent : colorPrimary;
+      colors[i] = mixedColor.r;
+      colors[i+1] = mixedColor.g;
+      colors[i+2] = mixedColor.b;
+    }
+
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    
+    const particleMat = new THREE.PointsMaterial({
+      size: 1.5,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particleMesh = new THREE.Points(particleGeo, particleMat);
+    coreGroup.add(particleMesh);
 
     let frameId: number;
+    let time = 0;
 
-    maskImg.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    const render = () => {
+      frameId = requestAnimationFrame(render);
+      time += 0.005;
+      
+      // Complex rotations for the cyber-core
+      innerMesh.rotation.y += 0.02;
+      innerMesh.rotation.x += 0.01;
+      
+      outerMesh.rotation.y -= 0.01;
+      outerMesh.rotation.z += 0.005;
 
-      const Res = 150; // Increased resolution
-      canvas.width = Res;
-      canvas.height = Res;
-      ctx.drawImage(maskImg, 0, 0, Res, Res);
-      const data = ctx.getImageData(0, 0, Res, Res).data;
+      particleMesh.rotation.y = time * 0.5;
+      particleMesh.rotation.x = Math.sin(time) * 0.2;
 
-      const positions: number[] = [];
-      const colors: number[] = [];
+      // Floating effect
+      coreGroup.position.y = Math.sin(time * 3) * 10;
 
-      const W = 150; 
-      const H = 190; 
-
-      const getZ = (x: number, y: number) => {
-        const nx = Math.abs(x);
-        const normX = x / (W / 2);
-        const normY = y / (H / 2);
-        const dd = Math.sqrt(normX * normX + normY * normY);
-        let zz = Math.cos(dd * Math.PI * 0.35) * 10;
-
-        // --- Refined Balanced Nose Logic ---
-        
-        return zz;
-      };
-
-      const hologramGroup = new THREE.Group();
-      maskRoot.add(hologramGroup);
-
-      // --- 3. Generate Feature Dots ---
-      for (let y = 0; y < Res; y++) {
-        for (let x = 0; x < Res; x++) {
-          const u = x / (Res - 1);
-          const v = (y / (Res - 1)); // Clean sampling
-          
-          const posX = (u - 0.5) * W;
-          const posY = (0.5 - v) * H;
-          const nx = Math.abs(posX);
-          const ny = posY;
-
-          const idx = (y * Res + x) * 4;
-          const r = data[idx];
-
-          const isFeature = r > 160; 
-          const isNoseFeature = nx < 4 && ny > -10 && ny < 15;
-          
-          if (isFeature || isNoseFeature) {
-            let posZ = getZ(posX, ny);
-            positions.push(posX, ny, posZ + 0.5); 
-            colors.push(colorPrimary.r, colorPrimary.g, colorPrimary.b);
-          }
-        }
-      }
-
-      const pointsGeo = new THREE.BufferGeometry();
-      pointsGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      pointsGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-      const pointsMat = new THREE.PointsMaterial({
-        size: 0.8,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.9,
-        blending: THREE.AdditiveBlending,
-        sizeAttenuation: true
-      });
-
-      const featurePoints = new THREE.Points(pointsGeo, pointsMat);
-      hologramGroup.add(featurePoints);
-
-      // --- 4. Animation Loop ---
-      const render = () => {
-        frameId = requestAnimationFrame(render);
-        
-        // 1. Static Scene Orientation
-        maskRoot.rotation.y = -0.4;
-        maskRoot.rotation.x = 0.1; 
-
-        // 2. Dynamic Hologram Animation (Rotate & Float)
-        const time = Date.now();
-        if (hologramGroup) {
-          hologramGroup.rotation.y += 0.01;
-          hologramGroup.position.y = Math.sin(time * 0.0015) * 8;
-        }
-
-        renderer.render(scene, camera);
-      };
-      render();
-
-      gsap.from(maskRoot.scale, {
-        x: 0, y: 0, z: 0,
-        duration: 1.5,
-        ease: "power4.out"
-      });
+      renderer.render(scene, camera);
     };
+    render();
+
+    // Entry animation
+    gsap.from(coreGroup.scale, {
+      x: 0, y: 0, z: 0,
+      duration: 2,
+      ease: "elastic.out(1, 0.5)"
+    });
+    
+    gsap.from(coreGroup.rotation, {
+      y: Math.PI * 2,
+      duration: 2,
+      ease: "power3.out"
+    });
 
     const handleResize = () => {
       if (!containerRef.current) return;
@@ -170,6 +154,6 @@ export function HackerMask3D() {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative" />
+    <div ref={containerRef} className="w-full h-full relative flex items-center justify-center pointer-events-none" />
   );
 }

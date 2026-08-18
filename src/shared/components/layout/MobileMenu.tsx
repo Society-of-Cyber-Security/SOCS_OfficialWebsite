@@ -1,79 +1,88 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { NeonButton } from "@/shared/components/ui/NeonButton";
 
-interface MobileMenuProps {
+type MobileMenuProps = {
   isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  setIsOpen: (open: boolean) => void;
   links: { name: string; href: string }[];
   pathname: string;
-}
+};
 
 export function MobileMenu({ isOpen, setIsOpen, links, pathname }: MobileMenuProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.button
-            type="button"
-            aria-label="Close menu"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[var(--color-cyber-black)]/95 backdrop-blur-md z-[40] lg:hidden"
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-[3000000] bg-black/70 backdrop-blur-sm lg:hidden"
           />
 
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-background/95 backdrop-blur-xl border-l border-primary/30 z-[3000001] flex flex-col pt-24 px-6 lg:hidden"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+            className="fixed top-0 left-0 right-0 z-[45] bg-[var(--color-cyber-black)] border-b border-[var(--color-cyber-gray)] lg:hidden shadow-sm pt-[80px]"
           >
-            <div className="flex-1 flex flex-col space-y-6">
-              <div className="text-primary font-jetbrains text-sm mb-4 border-b border-primary/20 pb-2">
-                &gt; SELECT MENU_ITEM:
+            <div className="flex flex-col px-8 py-8">
+              <div className="flex flex-col gap-0 mb-8 pb-8">
+                {links.map((link, i) => {
+                  const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
+                  return (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                    >
+                      <Link
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`block text-3xl font-heading font-bold py-4 border-b border-[var(--color-cyber-gray)]/50 transition-colors ${
+                          isActive
+                            ? "text-[var(--color-cyber-neon)]"
+                            : "text-[var(--color-cyber-light)] hover:text-[var(--color-cyber-white)]"
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
 
-              {links.map((link, i) => {
-                const isActive = pathname === link.href;
-                return (
-                  <motion.div
-                    key={link.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`block font-turret text-2xl font-black py-4 uppercase border-b border-primary/5 ${
-                        isActive ? "text-primary bg-primary/5 px-4" : "text-gray-500 hover:text-white"
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: links.length * 0.1 }}
-                className="pt-8"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col gap-4"
               >
-                <NeonButton
-                  href="/login"
-                  className="w-full justify-start"
+                <Link
+                  href="/join"
                   onClick={() => setIsOpen(false)}
+                  className="btn-primary w-full py-4 text-lg"
                 >
-                  &gt; EXECUTE LOGIN_ACCESS
-                </NeonButton>
+                  Join Us
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="btn-outline w-full py-4 text-lg"
+                >
+                  Member Login
+                </Link>
               </motion.div>
             </div>
           </motion.div>

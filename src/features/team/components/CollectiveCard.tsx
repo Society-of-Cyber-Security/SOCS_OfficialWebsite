@@ -3,14 +3,13 @@
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { Globe, Terminal, User, Zap } from "lucide-react";
+import { User, Sparkles, Star } from "lucide-react";
 import { TeamMember } from "@/core/config/team";
-import { GlitchText } from "@/shared/components/ui/GlitchText";
 
 const CLEARANCE_MAP = {
-  core: { label: "ADMIN", color: "bg-red-500", text: "text-red-500" },
-  lead: { label: "SENIOR", color: "bg-yellow-500", text: "text-yellow-500" },
-  member: { label: "MEMBER", color: "bg-blue-500", text: "text-blue-500" },
+  core: { label: "Core Admin", badgeColor: "border-[var(--color-cyber-white)] text-[var(--color-cyber-white)] bg-[var(--color-cyber-white)]/5", starCount: 3 },
+  lead: { label: "Lead Operator", badgeColor: "border-[var(--color-cyber-neon)] text-[var(--color-cyber-neon)] bg-[var(--color-cyber-neon)]/5", starCount: 2 },
+  member: { label: "Member", badgeColor: "border-[var(--color-cyber-gray)] text-[var(--color-cyber-light)] bg-[var(--color-cyber-dark)]", starCount: 1 },
 } as const;
 
 export function CollectiveCard({
@@ -27,92 +26,83 @@ export function CollectiveCard({
   useEffect(() => {
     gsap.fromTo(
       cardRef.current,
-      { opacity: 0, y: 20 },
+      { opacity: 0, scale: 0.95, y: 20 },
       {
         opacity: 1,
+        scale: 1,
         y: 0,
-        duration: 0.6,
+        duration: 0.5,
         delay: delay * 0.05,
-        ease: "power2.out",
+        ease: "back.out(1.5)",
       }
     );
   }, [delay]);
 
-  const clearance = CLEARANCE_MAP[member.tier];
-  const hexId = `#0X${(member.name.length * 153).toString(16).toUpperCase()}${member.name
-    .charCodeAt(0)
-    .toString(16)
-    .toUpperCase()}`;
-  const isCreditsCard = variant === "credits";
+  const clearance = CLEARANCE_MAP[member.tier] || CLEARANCE_MAP.member;
 
   return (
     <Link href={`/team/${member.slug}`} className="block h-full group">
       <div
         ref={cardRef}
-        className="dashboard-card p-6 rounded-sm border-b-2 border-b-white/5 group-hover:border-b-primary/50 transition-all opacity-0 h-full min-h-[260px] flex flex-col cursor-pointer bg-black/40 backdrop-blur-sm"
+        className="stealth-card p-6 h-full min-h-[260px] flex flex-col justify-between relative overflow-hidden transition-all duration-300 bg-[var(--color-cyber-black)] hover:bg-[var(--color-cyber-dark)] rounded-sm"
       >
-        <div className={`mb-6 ${isCreditsCard ? "flex justify-center" : "flex justify-between items-start"}`}>
-          <div className="relative">
-            <div
-              className={`bg-gradient-to-br from-gray-800 to-black border border-white/10 rounded-sm flex items-center justify-center overflow-hidden ${
-                isCreditsCard ? "w-24 h-24" : "w-16 h-16"
-              }`}
-            >
-              <User
-                className={`text-gray-600 group-hover:text-primary/40 transition-colors ${
-                  isCreditsCard ? "w-12 h-12" : "w-8 h-8"
-                }`}
-              />
-              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        {/* Top clearance badge and avatar */}
+        <div className="relative z-10">
+          <div className="mb-6 flex items-start justify-between gap-3">
+            {/* Avatar Frame */}
+            <div className="relative">
+              <div className="w-16 h-16 bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] flex items-center justify-center overflow-hidden group-hover:border-[var(--color-cyber-white)] transition-colors rounded-sm">
+                {member.image ? (
+                  <img src={member.image} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                ) : (
+                  <User className="w-8 h-8 text-[var(--color-cyber-muted)] group-hover:text-[var(--color-cyber-white)] transition-colors" />
+                )}
+              </div>
             </div>
-            {!isCreditsCard && (
-              <div
-                className={`absolute -bottom-1 -right-1 w-3 h-3 ${clearance.color} rounded-sm shadow-[0_0_8px_rgba(255,255,255,0.2)]`}
-              />
-            )}
+
+            {/* Tier & Stars */}
+            <div className="flex flex-col items-end">
+              <span className={`px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-widest border rounded-sm ${clearance.badgeColor}`}>
+                {clearance.label}
+              </span>
+              <div className="flex items-center gap-0.5 mt-2">
+                {Array.from({ length: clearance.starCount }).map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-[var(--color-cyber-neon)] fill-[var(--color-cyber-neon)]" />
+                ))}
+              </div>
+            </div>
           </div>
 
-          {!isCreditsCard && (
-            <div className="text-right">
-              <div className={`text-[9px] font-bold tracking-widest ${clearance.text} uppercase mb-1`}>
-                CLEARANCE: {clearance.label}
-              </div>
-              <div className="text-[10px] text-gray-500 font-mono tracking-tighter">ID: {hexId}</div>
+          {/* Name & Role */}
+          <div className="mb-4">
+            <h3 className="text-xl font-heading font-bold text-[var(--color-cyber-white)] tracking-tighter group-hover:text-[var(--color-cyber-neon)] transition-colors line-clamp-1">
+              {member.name}
+            </h3>
+            <p className="text-[10px] font-mono font-bold text-[var(--color-cyber-muted)] uppercase tracking-widest mt-1">
+              {member.role}
+            </p>
+          </div>
+
+          {/* Skills (if available) */}
+          {member.skills && member.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-6 mt-4">
+              {member.skills.slice(0, 3).map((skill, idx) => (
+                <span key={idx} className="text-[var(--color-cyber-light)] font-mono text-[9px] uppercase border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] px-2 py-0.5 rounded-sm">
+                  {skill}
+                </span>
+              ))}
             </div>
           )}
         </div>
 
-        <div className={`flex-grow ${isCreditsCard ? "text-center" : ""}`}>
-          <h3 className="text-white font-bold font-grotesk text-xl tracking-tight mb-1 uppercase group-hover:text-primary transition-colors">
-            <GlitchText text={member.name.replace(" ", "_")} />
-          </h3>
-          <p
-            className={`text-[10px] text-primary/60 font-jetbrains tracking-widest uppercase mb-4 ${
-              isCreditsCard ? "justify-center" : ""
-            }`}
-          >
-            {member.role.replace(" ", "_")}
-          </p>
+        {/* Card Footer */}
+        <div className="pt-4 border-t border-[var(--color-cyber-gray)] flex justify-between items-center text-[10px] font-mono text-[var(--color-cyber-muted)] font-bold relative z-10">
+          <span className="group-hover:text-[var(--color-cyber-white)] transition-colors flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-[var(--color-cyber-neon)]" />
+            OPERATOR PROFILE
+          </span>
+          <span className="text-[var(--color-cyber-muted)] group-hover:text-[var(--color-cyber-white)] group-hover:translate-x-1 transition-all">→</span>
         </div>
-
-        {isCreditsCard ? (
-          <div className="mt-auto pt-4 border-t border-white/5">
-            <div className="text-[8px] text-primary/40 font-mono uppercase tracking-[0.25em]">
-              SOCS_WEBSITE_CREDITS
-            </div>
-          </div>
-        ) : (
-          <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
-            <div className="flex gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
-              <Globe className="w-3 h-3 text-gray-500" />
-              <Terminal className="w-3 h-3 text-gray-500" />
-              <Zap className="w-3 h-3 text-gray-500" />
-            </div>
-            <div className="text-[8px] text-gray-700 font-mono uppercase tracking-tighter group-hover:text-primary/40 transition-colors">
-              NODE_ACCESS_GRANTED
-            </div>
-          </div>
-        )}
       </div>
     </Link>
   );
