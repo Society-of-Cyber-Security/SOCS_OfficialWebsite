@@ -131,14 +131,13 @@ export function GallerySection() {
         className="relative w-full border-t border-[var(--color-cyber-gray)]"
         style={{ zIndex: 10 }}
       >
-        <div className="w-screen h-screen overflow-hidden bg-[var(--color-cyber-black)]">
+        <div className="w-full h-screen overflow-hidden bg-[var(--color-cyber-black)]">
           <div
             ref={trackRef}
             className="flex items-stretch h-full"
             style={{ willChange: "transform" }}
           >
-            {/* First panel: Header + CTA */}
-            <div className="shrink-0 w-screen h-full flex flex-col justify-center px-6 lg:px-16 relative">
+            <div className="shrink-0 w-full h-full flex flex-col justify-center px-6 lg:px-16 relative">
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-[var(--color-tech-blue)]/5 rounded-full blur-[120px]" />
                 <div className="absolute bottom-[20%] left-[5%] w-[200px] h-[200px] bg-[var(--color-tech-red)]/5 rounded-full blur-[100px]" />
@@ -146,7 +145,7 @@ export function GallerySection() {
 
               <div className="relative z-10 max-w-3xl">
                 <div className="gallery-header-animate font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-6">
-                  04 — Visual Archive
+                  02 — Visual Archive
                 </div>
                 <h2 className="gallery-header-animate font-heading font-black text-5xl sm:text-6xl lg:text-8xl tracking-tighter leading-[0.85] mb-8 text-[var(--color-cyber-white)]">
                   Operations <br />
@@ -179,7 +178,7 @@ export function GallerySection() {
               <div
                 key={img._id}
                 className="gallery-card-container shrink-0 h-full flex items-center px-2 md:px-3"
-                style={{ width: "clamp(360px, 45vw, 700px)" }}
+                style={{ width: "clamp(280px, 45vw, 700px)" }}
               >
                 <div className="gallery-card group relative w-full h-[76vh] max-h-[800px] overflow-hidden rounded-lg border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-dark)] cursor-pointer transition-all duration-500 hover:border-[var(--color-tech-blue)]/40">
                   <img

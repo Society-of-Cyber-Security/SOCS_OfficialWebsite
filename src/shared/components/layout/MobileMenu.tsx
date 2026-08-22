@@ -50,7 +50,7 @@ export function MobileMenu({ isOpen, setIsOpen, links, pathname }: MobileMenuPro
                       <Link
                         href={link.href}
                         onClick={() => setIsOpen(false)}
-                        className={`block text-3xl font-heading font-bold py-4 border-b border-[var(--color-cyber-gray)]/50 transition-colors ${
+                        className={`block text-xl font-heading font-bold py-3 border-b border-[var(--color-cyber-gray)]/50 transition-colors ${
                           isActive
                             ? "text-[var(--color-cyber-neon)]"
                             : "text-[var(--color-cyber-light)] hover:text-[var(--color-cyber-white)]"
@@ -72,14 +72,14 @@ export function MobileMenu({ isOpen, setIsOpen, links, pathname }: MobileMenuPro
                 <Link
                   href="/join"
                   onClick={() => setIsOpen(false)}
-                  className="btn-primary w-full py-4 text-lg"
+                  className="btn-primary w-full py-3 text-base"
                 >
                   Join Us
                 </Link>
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="btn-outline w-full py-4 text-lg"
+                  className="btn-outline w-full py-3 text-base"
                 >
                   Member Login
                 </Link>

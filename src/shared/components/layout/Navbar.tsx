@@ -115,17 +115,11 @@ export function Navbar() {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-4">
-            {!isLoading && (
+            {!isLoading ? (
               isAuthenticated ? (
-                <div className="hidden sm:flex items-center gap-4">
+                <div className="hidden lg:flex items-center gap-4">
                   {role && <RoleBadge role={role} />}
-                  
-
-
-                  {isAuthenticated && (
-                    <InboxButton isAdmin={role === 'admin' || role === 'superadmin'} />
-                  )}
-
+                  {isAuthenticated && <InboxButton isAdmin={role === 'admin' || role === 'superadmin'} />}
                   <button
                     onClick={logout}
                     className="text-[var(--color-cyber-muted)] hover:text-red-500 hover:scale-110 transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] cursor-pointer"
@@ -137,12 +131,12 @@ export function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="btn-primary text-sm px-5 py-2 hidden sm:flex"
+                  className="btn-primary text-xs px-4 py-1.5 hidden lg:flex whitespace-nowrap"
                 >
                   Member Portal
                 </Link>
               )
-            )}
+            ) : null}
 
             {/* Mobile Toggle */}
             <button

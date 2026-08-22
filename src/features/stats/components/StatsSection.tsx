@@ -47,11 +47,11 @@ export function StatsSection() {
       <div className="w-full border-y border-[var(--color-cyber-gray)]">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[var(--color-cyber-gray)]">
+          <div className="grid grid-cols-3 divide-x divide-[var(--color-cyber-gray)]">
             
             {/* Metric 001: Active Members */}
-            <div className="stat-block py-16 md:py-20 md:pr-12 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-blue mb-4">
+            <div className="stat-block py-12 md:py-20 md:pr-12 flex flex-col items-center md:items-start text-center md:text-left px-2">
+              <div className="font-heading font-black text-[clamp(3rem,8vw,7rem)] leading-[0.85] text-gradient-blue mb-4">
                 <NumberTicker value={42} />
                 <span className="text-[var(--color-cyber-muted)] font-light">+</span>
               </div>
@@ -61,8 +61,8 @@ export function StatsSection() {
             </div>
 
             {/* Metric 002: Research Projects */}
-            <div className="stat-block py-16 md:py-20 md:px-12 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-red mb-4">
+            <div className="stat-block py-12 md:py-20 md:px-12 flex flex-col items-center md:items-start text-center md:text-left px-2">
+              <div className="font-heading font-black text-[clamp(3rem,8vw,7rem)] leading-[0.85] text-gradient-red mb-4">
                 <NumberTicker value={15} />
                 <span className="text-[var(--color-cyber-muted)] font-light">+</span>
               </div>
@@ -72,8 +72,8 @@ export function StatsSection() {
             </div>
 
             {/* Metric 003: CTF Victories */}
-            <div className="stat-block py-16 md:py-20 md:pl-12 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="font-heading font-black text-[clamp(4rem,8vw,7rem)] leading-[0.85] text-gradient-yellow mb-4">
+            <div className="stat-block py-12 md:py-20 md:pl-12 flex flex-col items-center md:items-start text-center md:text-left px-2">
+              <div className="font-heading font-black text-[clamp(3rem,8vw,7rem)] leading-[0.85] text-gradient-yellow mb-4">
                 <NumberTicker value={8} />
               </div>
               <div className="font-mono text-sm uppercase tracking-widest text-[var(--color-cyber-light)] font-medium">

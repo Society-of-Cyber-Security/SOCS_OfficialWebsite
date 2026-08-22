@@ -58,7 +58,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       const { email, password } = await req.json();
       const user = await User.findOne({ email }).select('+password');
 
-      if (!user) {
+        console.log("DB:", User.db.name);
+        console.log("COLLECTION:", User.collection.name);
+        console.log("USER COUNT:", await User.countDocuments());
+        console.log("USER FOUND:", !!user);
+
+        if (!user) {
         return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
       }
 

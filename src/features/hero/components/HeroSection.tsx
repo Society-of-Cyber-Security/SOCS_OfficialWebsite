@@ -61,11 +61,6 @@ export function HeroSection() {
           {/* Left Column: Hero Content */}
           <div className="lg:col-span-7 flex flex-col justify-center">
             
-            <div className="hero-reveal mb-8">
-              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1.5 rounded-sm">
-                Research • Defense • Community
-              </span>
-            </div>
 
             {/* Main Hero Headline */}
             <h1 className="hero-reveal font-heading font-black text-[clamp(4.5rem,9vw,8rem)] leading-[0.95] tracking-tighter mb-8">
@@ -91,21 +86,7 @@ export function HeroSection() {
               </Link>
             </div>
 
-            {/* Metrics List */}
-            <div className="hero-reveal flex flex-col sm:flex-row gap-8 pt-8 border-t border-[var(--color-cyber-gray)]">
-              <div className="flex flex-col gap-1">
-                <span className="font-heading font-bold text-3xl">42+</span>
-                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">Active Members</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-heading font-bold text-3xl">15+</span>
-                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">Research Projects</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-heading font-bold text-3xl text-[var(--color-cyber-neon)]">08</span>
-                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-wider">CTF Victories</span>
-              </div>
-            </div>
+
           </div>
 
           {/* Right Column: 3D Visualization */}

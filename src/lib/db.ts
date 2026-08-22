@@ -31,6 +31,7 @@ export const connectDB = async () => {
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log(`MongoDB Connected: ${mongoose.connection.host}`);
+    console.log(`MongoDB Database: ${mongoose.connection.name}`);
       return mongoose;
     });
   }

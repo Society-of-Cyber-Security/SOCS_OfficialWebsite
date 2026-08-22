@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
 import { HeroSection } from "@/features/hero/components/HeroSection";
 import { IdentitySection } from "@/features/about/components/IdentitySection";
-import { WhatWeDoSection } from "@/features/home/components/WhatWeDoSection";
 import { GallerySection } from "@/features/home/components/GallerySection";
 import { StatsSection } from "@/features/stats/components/StatsSection";
 import { FeaturedProjects } from "@/features/projects/components/FeaturedProjects";
@@ -22,7 +21,6 @@ export default function Home() {
       
       <div className="w-full flex flex-col">
         <IdentitySection />
-        <WhatWeDoSection />
         <GallerySection />
         <StatsSection />
         <FeaturedProjects />
