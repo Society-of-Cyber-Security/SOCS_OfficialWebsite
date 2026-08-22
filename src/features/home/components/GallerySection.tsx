@@ -1,75 +1,238 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Image as ImageIcon } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const GALLERY_IMAGES = [
-  { id: 1, title: "Core Team Briefing", category: "Team", src: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
-  { id: 2, title: "Infrastructure Dock", category: "Infrastructure", src: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
-  { id: 3, title: "Hackathon Event 2026", category: "Events", src: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
+import { fetchApi } from "@/shared/lib/api";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+interface DisplayImage {
+  _id: string | number;
+  caption: string;
+  url: string;
+  category: string;
+}
+
+const MOCK_IMAGES = [
+  { _id: 1, caption: "Core Team Briefing", category: "Team", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
+  { _id: 2, caption: "Infrastructure Dock", category: "Infrastructure", url: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
+  { _id: 3, caption: "Hackathon Event 2026", category: "Events", url: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
+  { _id: 4, caption: "Cyber Squad Collaboration", category: "Team", url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" },
+  { _id: 5, caption: "Hardware & Security Lab", category: "Infrastructure", url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
+  { _id: 6, caption: "Night CTF Tournament", category: "Events", url: "https://images.unsplash.com/photo-1510511459019-5dee1a2078a5?auto=format&fit=crop&w=800&q=80" },
 ];
 
 export function GallerySection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<DisplayImage[]>([]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const loadImages = async () => {
+      try {
+        const res = await fetchApi('/gallery?featured=true');
+        if (res && res.success && res.data.length > 0) {
+          const mapped = res.data.map((img: any) => ({
+            _id: img._id,
+            caption: img.caption || 'Untitled Capture',
+            url: img.url,
+            category: 'Featured'
+          }));
+          setGalleryImages([...mapped, ...MOCK_IMAGES]);
+        } else {
+          setGalleryImages(MOCK_IMAGES);
+        }
+      } catch (err) {
+        console.error("Failed to load featured gallery", err);
+        setGalleryImages(MOCK_IMAGES);
+      }
+    };
+    loadImages();
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || !containerRef.current || !pinRef.current || !trackRef.current || galleryImages.length === 0) return;
+
+    const track = trackRef.current;
+
+    const getScrollAmount = () => {
+      return track.scrollWidth - window.innerWidth;
+    };
+
+    const ctx = gsap.context(() => {
+      // Header animations
+      gsap.fromTo(
+        ".gallery-header-animate",
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.12,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: pinRef.current,
+            start: "top 85%",
+          },
+        }
+      );
+
+      // Slide up cards as they enter viewport
+      gsap.fromTo(
+        ".gallery-card-container",
+        { opacity: 0, y: 50, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: pinRef.current,
+            start: "top 85%",
+          }
+        }
+      );
+
+      // Pin the section and translate the track left
+      gsap.to(track, {
+        x: () => -getScrollAmount(),
+        ease: "none",
+        scrollTrigger: {
+          trigger: pinRef.current,
+          start: "top top",
+          end: () => `+=${getScrollAmount()}`,
+          pin: true,
+          pinSpacing: true,
+          scrub: 1,
+          invalidateOnRefresh: true,
+          anticipatePin: 1,
+        },
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [isMounted, galleryImages]);
+
   return (
-    <section className="py-24 md:py-36 w-full relative bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)] border-t border-[var(--color-cyber-gray)]">
-      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 relative z-10">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-          <div>
-            <div className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-4">
-              04 — Visual Archive
-            </div>
-            <h2 className="font-heading font-black text-4xl sm:text-5xl lg:text-6xl tracking-tighter leading-none mb-6">
-              Operations <br />
-              <span className="text-gradient-red font-display font-bold">Gallery</span>
-            </h2>
-            <p className="font-body text-base text-[var(--color-cyber-light)] max-w-xl leading-relaxed">
-              A visual log of hackathons, club sessions, infrastructure buildouts, and community events.
-            </p>
-          </div>
-
-          <Link 
-            href="/gallery"
-            className="btn-outline px-6 py-3 text-xs uppercase tracking-widest flex items-center justify-center shrink-0 self-start md:self-end"
+    <div ref={containerRef} suppressHydrationWarning>
+      <div
+        ref={pinRef}
+        className="relative w-full border-t border-[var(--color-cyber-gray)]"
+        style={{ zIndex: 10 }}
+      >
+        <div className="w-screen h-screen overflow-hidden bg-[var(--color-cyber-black)]">
+          <div
+            ref={trackRef}
+            className="flex items-stretch h-full"
+            style={{ willChange: "transform" }}
           >
-            <span>View Full Archive</span>
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Link>
-        </div>
-
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {GALLERY_IMAGES.map((img) => (
-            <div key={img.id} className="stealth-card group flex flex-col h-full cursor-pointer">
-              {/* Image Container */}
-              <div className="aspect-video overflow-hidden relative border-b border-[var(--color-cyber-gray)]">
-                <img 
-                  src={img.src} 
-                  alt={img.title}
-                  className="w-full h-full object-cover grayscale opacity-90 transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100"
-                />
-                <div className="absolute top-4 right-4 bg-[var(--color-cyber-black)]/90 backdrop-blur-md px-3 py-1 border border-[var(--color-cyber-gray)] text-[9px] font-mono tracking-widest text-[var(--color-cyber-white)] uppercase rounded-sm">
-                  {img.category}
-                </div>
+            {/* First panel: Header + CTA */}
+            <div className="shrink-0 w-screen h-full flex flex-col justify-center px-6 lg:px-16 relative">
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-[var(--color-tech-blue)]/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[20%] left-[5%] w-[200px] h-[200px] bg-[var(--color-tech-red)]/5 rounded-full blur-[100px]" />
               </div>
 
-              {/* Content info */}
-              <div className="p-6 relative z-10 flex-grow flex flex-col justify-between">
-                <h3 className="text-xl font-heading font-bold text-[var(--color-cyber-white)] group-hover:text-gradient-blue transition-colors tracking-tighter leading-tight mb-4">
-                  {img.title}
-                </h3>
-                <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-[0.2em] mt-auto">
-                  <ImageIcon className="w-3.5 h-3.5 text-[var(--color-tech-blue)]" />
-                  <span>Verified Capture</span>
+              <div className="relative z-10 max-w-3xl">
+                <div className="gallery-header-animate font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-6">
+                  04 — Visual Archive
                 </div>
+                <h2 className="gallery-header-animate font-heading font-black text-5xl sm:text-6xl lg:text-8xl tracking-tighter leading-[0.85] mb-8 text-[var(--color-cyber-white)]">
+                  Operations <br />
+                  <span className="text-gradient-red font-display font-bold">Gallery</span>
+                </h2>
+                <p className="gallery-header-animate font-body text-base md:text-lg text-[var(--color-cyber-light)] max-w-xl leading-relaxed mb-10">
+                  A visual log of hackathons, club sessions, infrastructure buildouts, and community events.
+                </p>
+
+                <Link
+                  href="/gallery"
+                  className="gallery-header-animate btn-outline px-8 py-4 text-xs uppercase tracking-widest flex items-center w-fit"
+                >
+                  <span>View Full Archive</span>
+                  <ArrowRight className="w-4 h-4 ml-3" />
+                </Link>
+              </div>
+
+              <div className="gallery-header-animate absolute bottom-12 left-6 lg:left-16 flex items-center gap-3 text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-[0.2em]">
+                <div className="w-8 h-[1px] bg-[var(--color-cyber-muted)]" />
+                <span>Scroll to explore</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="animate-[bounce_2s_ease-in-out_infinite]">
+                  <path d="M3 8L8 13L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
             </div>
-          ))}
-        </div>
 
+            {/* Image panels */}
+            {galleryImages.map((img, idx) => (
+              <div
+                key={img._id}
+                className="gallery-card-container shrink-0 h-full flex items-center px-2 md:px-3"
+                style={{ width: "clamp(360px, 45vw, 700px)" }}
+              >
+                <div className="gallery-card group relative w-full h-[76vh] max-h-[800px] overflow-hidden rounded-lg border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-dark)] cursor-pointer transition-all duration-500 hover:border-[var(--color-tech-blue)]/40">
+                  <img
+                    src={img.url}
+                    alt={img.caption}
+                    className="w-full h-full object-cover grayscale opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100"
+                    loading="lazy"
+                  />
+
+                  {/* Category badge */}
+                  <div className="absolute top-5 right-5 bg-[var(--color-cyber-black)]/90 backdrop-blur-md px-3 py-1.5 border border-[var(--color-cyber-gray)] text-[9px] font-mono tracking-widest text-[var(--color-cyber-white)] uppercase rounded-sm">
+                    {img.category}
+                  </div>
+
+                  {/* Index number */}
+                  <div className="absolute top-5 left-5 text-[var(--color-cyber-white)]/10 font-heading font-black text-7xl leading-none pointer-events-none select-none">
+                    {String(idx + 1).padStart(2, "0")}
+                  </div>
+
+                  {/* Bottom overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-16 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 className="text-sm font-heading font-bold text-[var(--color-cyber-white)] tracking-tight leading-tight uppercase">
+                      {img.caption}
+                    </h3>
+                  </div>
+
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-lg shadow-[inset_0_0_30px_rgba(66,133,244,0.1)]" />
+                </div>
+              </div>
+            ))}
+
+            {/* End panel */}
+            <div className="shrink-0 w-[50vw] min-w-[300px] h-full flex items-center justify-center px-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full border border-[var(--color-cyber-gray)] flex items-center justify-center mb-6 group hover:bg-[var(--color-tech-blue)]/10 hover:border-[var(--color-tech-blue)]/40 transition-all cursor-pointer">
+                  <ArrowRight className="w-6 h-6 text-[var(--color-cyber-muted)] group-hover:text-[var(--color-tech-blue)] transition-colors" />
+                </div>
+                <Link
+                  href="/gallery"
+                  className="font-heading font-bold text-2xl text-[var(--color-cyber-white)] hover:text-[var(--color-tech-blue)] transition-colors tracking-tight"
+                >
+                  View Full Archive
+                </Link>
+                <span className="font-mono text-[10px] text-[var(--color-cyber-muted)] uppercase tracking-[0.2em] mt-3">
+                  {galleryImages.length} Captures Available
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
+

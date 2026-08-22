@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export class ApiError extends Error {
   status: number;
@@ -25,6 +25,7 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
       ...options.headers,
     },
     credentials: 'include', // Important for sending/receiving cookies
+    cache: 'no-store', // Prevent Next.js from aggressively caching GET requests
   };
 
   // If uploading file, remove Content-Type so browser sets boundary automatically

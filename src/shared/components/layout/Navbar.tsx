@@ -9,10 +9,11 @@ import { useAuth } from "@/core/context/AuthContext";
 import { RoleBadge } from "@/shared/components/auth/RoleBadge";
 import { fetchApi } from "@/shared/lib/api";
 
-function InboxButton() {
+function InboxButton({ isAdmin }: { isAdmin: boolean }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    if (!isAdmin) return;
     const fetchCount = async () => {
       try {
         const res = await fetchApi('/submissions/pending');
@@ -24,7 +25,7 @@ function InboxButton() {
       }
     };
     fetchCount();
-  }, []);
+  }, [isAdmin]);
 
   return (
     <Link
@@ -33,7 +34,7 @@ function InboxButton() {
     >
       <Inbox className="w-4 h-4" />
       <span>Inbox</span>
-      {count > 0 && (
+      {isAdmin && count > 0 && (
         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]">
           {count > 99 ? '99+' : count}
         </span>
@@ -121,13 +122,13 @@ export function Navbar() {
                   
 
 
-                  {(role === 'admin' || role === 'superadmin') && (
-                    <InboxButton />
+                  {isAuthenticated && (
+                    <InboxButton isAdmin={role === 'admin' || role === 'superadmin'} />
                   )}
 
                   <button
                     onClick={logout}
-                    className="text-[var(--color-cyber-muted)] hover:text-red-500 hover:scale-110 transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+                    className="text-[var(--color-cyber-muted)] hover:text-red-500 hover:scale-110 transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] cursor-pointer"
                     title="Logout"
                   >
                     <LogOut className="w-5 h-5" />

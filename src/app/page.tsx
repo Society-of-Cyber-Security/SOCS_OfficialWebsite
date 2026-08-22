@@ -10,7 +10,7 @@ import { GallerySection } from "@/features/home/components/GallerySection";
 import { StatsSection } from "@/features/stats/components/StatsSection";
 import { FeaturedProjects } from "@/features/projects/components/FeaturedProjects";
 import { EventsPreview } from "@/features/events/components/EventsPreview";
-import { HomeTeamPreview } from "@/features/team/components/HomeTeamPreview";
+
 import { Marquee } from "@/shared/components/ui/Marquee";
 import { useAuth } from "@/core/context/AuthContext";
 
@@ -27,7 +27,7 @@ export default function Home() {
         <StatsSection />
         <FeaturedProjects />
         <EventsPreview />
-        <HomeTeamPreview />
+
 
         {/* Editorial Join CTA Block */}
         {!isAuthenticated && (

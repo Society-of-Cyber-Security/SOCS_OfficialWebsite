@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchApi } from '@/shared/lib/api';
+import { useRouter } from 'next/navigation';
 
 export type UserRole = 'member' | 'admin' | 'superadmin';
 
@@ -35,9 +36,10 @@ const AuthContext = createContext<AuthContextType>({
   checkAuth: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   const checkAuth = useCallback(async () => {
     try {
@@ -97,6 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Logout error', error);
     } finally {
       setUser(null);
+      router.push('/');
     }
   };
 

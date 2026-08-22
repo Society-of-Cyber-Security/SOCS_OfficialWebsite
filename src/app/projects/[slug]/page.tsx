@@ -1,18 +1,51 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { projects } from "@/core/config/projects";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
 import { GithubIcon } from "@/shared/components/ui/Icons";
-import { ExternalLink, ArrowLeft, Shield, CheckCircle2 } from "lucide-react";
+import { ExternalLink, ArrowLeft, Shield, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { fetchApi } from "@/shared/lib/api";
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug as string;
-  const project = projects.find((p) => p.slug === slug);
+  const slug = params?.slug as string; // This is actually the project ID from the DB
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await fetchApi(`/projects/${slug}`);
+        if (res.success && res.data) {
+          setProject(res.data);
+        } else {
+          setProject(null);
+        }
+      } catch (err) {
+        console.error(err);
+        setProject(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (slug) {
+      fetchProject();
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <PageWrapper>
+        <div className="pt-32 text-center flex flex-col items-center justify-center min-h-[50vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-[var(--color-cyber-neon)] mb-4" />
+          <p className="font-mono text-sm tracking-widest uppercase text-[var(--color-cyber-muted)]">Decrypting Project Data...</p>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   if (!project) {
     return (
@@ -34,7 +67,7 @@ export default function ProjectDetailPage() {
         {/* Back button */}
         <button 
           onClick={() => router.back()}
-          className="inline-flex items-center gap-3 text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors text-[10px] font-mono tracking-widest uppercase mb-12 group"
+          className="inline-flex items-center gap-3 text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors text-[10px] font-mono tracking-widest uppercase mb-12 group cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Database</span>
@@ -46,7 +79,7 @@ export default function ProjectDetailPage() {
             <div className="stealth-card p-8 md:p-12 space-y-12">
               <div className="relative z-10">
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {project.tags.map((tag, i) => (
+                  {project.tags?.map((tag: string, i: number) => (
                     <span key={i} className="px-3 py-1 bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] text-[var(--color-cyber-white)] font-bold text-[9px] font-mono uppercase tracking-widest hover:border-[var(--color-cyber-white)] transition-colors cursor-default rounded-sm">
                       {tag}
                     </span>
@@ -69,38 +102,18 @@ export default function ProjectDetailPage() {
                   Technical Specifications
                 </h3>
                 <p className="text-[var(--color-cyber-light)] font-body text-sm leading-relaxed mb-8">
-                  This core module is designed for deep-packet inspection and automated vulnerability research in distributed environments.
+                  Core modules designed for deep research and distributed environments.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm">
-                    <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Kernel Version</span>
-                    <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono">v1.4.2-stable</p>
+                    <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Author</span>
+                    <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono truncate">{project.uploadedBy?.name || 'Unknown'}</p>
                   </div>
                   <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm">
-                    <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Compiler Stack</span>
-                    <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono">{project.techStack.join(" / ")}</p>
+                    <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Stack / Tags</span>
+                    <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono truncate">{project.tags?.join(" / ") || "N/A"}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Features Log */}
-              <div className="space-y-6 relative z-10">
-                <h3 className="text-[10px] font-mono text-[var(--color-cyber-white)] font-bold uppercase tracking-[0.2em]">
-                  Features & Capabilities
-                </h3>
-                <ul className="space-y-3 list-none p-0">
-                  {[
-                    "Automated reconnaissance and footprint mapping",
-                    "Cross-entropy analysis for anomaly detection",
-                    "Heuristic-based exploitation attempts with 98% accuracy",
-                    "Real-time logging and distributed node synchronization"
-                  ].map((item, i) => (
-                    <li key={i} className="flex gap-4 p-4 bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] font-body text-sm text-[var(--color-cyber-light)] items-start rounded-sm">
-                      <CheckCircle2 className="w-4 h-4 text-[var(--color-cyber-neon)] shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </div>
           </div>
@@ -113,18 +126,20 @@ export default function ProjectDetailPage() {
               </h3>
               
               <div className="space-y-4 relative z-10">
-                <a 
-                  href={project.githubUrl} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 w-full py-4 bg-[var(--color-cyber-dark)] hover:bg-[var(--color-cyber-white)] border border-[var(--color-cyber-gray)] hover:border-[var(--color-cyber-white)] text-[var(--color-cyber-white)] hover:text-[var(--color-cyber-black)] transition-all text-xs font-mono font-bold uppercase tracking-widest rounded-sm"
-                >
-                  <GithubIcon className="w-4 h-4" />
-                  <span>Source Repository</span>
-                </a>
+                {project.repoUrl && (
+                  <a 
+                    href={project.repoUrl} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full py-4 bg-[var(--color-cyber-dark)] hover:bg-[var(--color-cyber-white)] border border-[var(--color-cyber-gray)] hover:border-[var(--color-cyber-white)] text-[var(--color-cyber-white)] hover:text-[var(--color-cyber-black)] transition-all text-xs font-mono font-bold uppercase tracking-widest rounded-sm"
+                  >
+                    <GithubIcon className="w-4 h-4" />
+                    <span>Source Repository</span>
+                  </a>
+                )}
                 
                 <button 
-                  className="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 rounded-sm"
+                  className="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 rounded-sm cursor-pointer"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>Live Preview</span>
@@ -137,12 +152,14 @@ export default function ProjectDetailPage() {
                 Deployment Context
               </h3>
               <div className="flex items-center justify-between py-1">
-                <span>DEPLOYMENT</span>
-                <span className="text-[var(--color-cyber-white)] font-bold">EDGE_DEVOPS_04</span>
+                <span>STATUS</span>
+                <span className="text-[var(--color-cyber-neon)] font-bold">ONLINE</span>
               </div>
               <div className="flex items-center justify-between py-1">
-                <span>HARDWARE</span>
-                <span className="text-[var(--color-cyber-white)] font-bold">NV_TESLA_A100</span>
+                <span>UPDATED</span>
+                <span className="text-[var(--color-cyber-white)] font-bold">
+                  {new Date(project.updatedAt || project.createdAt).toLocaleDateString()}
+                </span>
               </div>
             </div>
           </div>

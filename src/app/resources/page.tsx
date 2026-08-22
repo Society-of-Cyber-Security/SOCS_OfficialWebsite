@@ -4,9 +4,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
 import { ResourceCard } from "@/shared/components/cards/ResourceCard";
 import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
-import { staggerCardsOnScroll } from "@/shared/lib/animations";
 import { Plus, BookOpen, Wrench, FileText, Newspaper, UploadCloud } from "lucide-react";
 import { useAuth } from "@/core/context/AuthContext";
+import { motion } from "framer-motion";
 
 export default function ResourcesPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,13 +35,7 @@ export default function ResourcesPage() {
     fetchResources();
   }, [isModalOpen]);
 
-  useEffect(() => {
-    if (!isLoading && containerRef.current) {
-      setTimeout(() => {
-        if (containerRef.current) staggerCardsOnScroll(containerRef.current);
-      }, 50);
-    }
-  }, [isLoading, resources.length]);
+  // No-op - removed GSAP trigger to use Framer Motion instead
 
   const handleOpenModal = (mode: "add" | "propose" | "edit", resource: any = null) => {
     setModalMode(mode);
@@ -131,7 +125,10 @@ export default function ResourcesPage() {
         ) : (
           <div ref={containerRef} className="space-y-20 mt-16">
             {categories.map((category) => {
-              const items = resources.filter(r => r.category === category.id);
+              const items = resources.filter(r => {
+                const cat = (r.category || '').toLowerCase().trim();
+                return cat === category.id || cat.includes(category.id) || category.id.includes(cat);
+              });
               if (items.length === 0) return null;
               
               return (
@@ -147,13 +144,18 @@ export default function ResourcesPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {items.map((resource, i) => (
-                      <div key={resource._id || i} className="resource-card-wrapper opacity-0">
+                      <motion.div 
+                        key={resource._id || i}
+                        initial={{ opacity: 0, y: 20, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.4) }}
+                      >
                         <ResourceCard 
                           resource={resource} 
                           onEdit={(r) => handleOpenModal('edit', r)}
                           onDelete={handleDelete}
                         />
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </section>

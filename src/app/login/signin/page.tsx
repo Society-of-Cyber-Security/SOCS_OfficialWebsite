@@ -96,14 +96,7 @@ function SignInForm() {
           </button>
         </form>
 
-        <div className="mt-8 p-4 bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm text-center space-y-2">
-          <p className="text-[10px] font-mono text-cyber-blue uppercase tracking-widest">Demo Access Credentials:</p>
-          <div className="text-[9px] font-mono text-[var(--color-cyber-muted)] grid grid-cols-2 gap-2 text-left">
-            <span>Member:</span> <span>member@socs.ac.in / member123</span>
-            <span>Admin:</span> <span>admin@socs.ac.in / admin123</span>
-            <span>SuperAdmin:</span> <span>superadmin@socs.ac.in / super123</span>
-          </div>
-        </div>
+
       </div>
     </div>
   );

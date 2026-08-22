@@ -5,6 +5,7 @@ import { Navbar } from "@/shared/components/layout/Navbar";
 import { Footer } from "@/shared/components/layout/Footer";
 import { ClientProviders } from "@/core/providers/AppProviders";
 import { AuthProvider } from "@/core/context/AuthContext";
+import { CustomCursor } from "@/shared/components/ui/CustomCursor";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space",
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)] overflow-x-hidden selection:bg-[var(--color-cyber-neon)] selection:text-white" suppressHydrationWarning>
         <ClientProviders>
           <AuthProvider>
+            <CustomCursor />
             <Navbar />
             <main className="flex-grow flex flex-col items-center">
               {children}
