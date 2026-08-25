@@ -19,14 +19,7 @@ interface DisplayImage {
   category: string;
 }
 
-const MOCK_IMAGES = [
-  { _id: 1, caption: "Core Team Briefing", category: "Team", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
-  { _id: 2, caption: "Infrastructure Dock", category: "Infrastructure", url: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
-  { _id: 3, caption: "Hackathon Event 2026", category: "Events", url: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
-  { _id: 4, caption: "Cyber Squad Collaboration", category: "Team", url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" },
-  { _id: 5, caption: "Hardware & Security Lab", category: "Infrastructure", url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
-  { _id: 6, caption: "Night CTF Tournament", category: "Events", url: "https://images.unsplash.com/photo-1510511459019-5dee1a2078a5?auto=format&fit=crop&w=800&q=80" },
-];
+// Mock images removed; strictly using API data.
 
 export function GallerySection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,20 +40,20 @@ export function GallerySection() {
             url: img.url,
             category: 'Featured'
           }));
-          setGalleryImages([...mapped, ...MOCK_IMAGES]);
+          setGalleryImages(mapped);
         } else {
-          setGalleryImages(MOCK_IMAGES);
+          setGalleryImages([]);
         }
       } catch (err) {
         console.error("Failed to load featured gallery", err);
-        setGalleryImages(MOCK_IMAGES);
+        setGalleryImages([]);
       }
     };
     loadImages();
   }, []);
 
   useEffect(() => {
-    if (!isMounted || !containerRef.current || !pinRef.current || !trackRef.current || galleryImages.length === 0) return;
+    if (!isMounted || !containerRef.current || !pinRef.current || !trackRef.current) return;
 
     const track = trackRef.current;
 

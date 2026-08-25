@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { teamMembers } from "@/core/config/team";
-import { Search, Plus, Shield, Check, User as UserIcon } from "lucide-react";
+import { Search, Plus, Shield, Trash2 } from "lucide-react";
 import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
 import { TeamCard } from "@/shared/components/cards/TeamCard";
 import { useAuth } from "@/core/context/AuthContext";
@@ -12,24 +11,36 @@ import { fetchApi } from "@/shared/lib/api";
 export default function TeamPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { isAuthenticated, role, isLoading } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
-  const [isManaging, setIsManaging] = useState(false);
+  const { isAuthenticated, role } = useAuth();
   
-  const filteredMembers = teamMembers.filter((m) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      m.name.toLowerCase().includes(q) ||
-      m.role.toLowerCase().includes(q) ||
-      m.skills?.some(s => s.toLowerCase().includes(q))
-    );
-  });
+  const [users, setUsers] = useState<any[]>([]);
+  const [teamRoster, setTeamRoster] = useState<any[]>([]);
+  const [isManaging, setIsManaging] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchTeamRoster();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && (role === "superadmin" || role === "admin") && isManaging) {
       fetchUsers();
     }
   }, [isAuthenticated, role, isManaging]);
+
+  const fetchTeamRoster = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetchApi('/team');
+      if (res && res.success) {
+        setTeamRoster(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -59,7 +70,7 @@ export default function TeamPage() {
   };
 
   const removeUser = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
+    if (!confirm("Are you sure you want to remove this user access?")) return;
     try {
       const res = await fetchApi(`/users/${id}`, {
         method: "DELETE",
@@ -74,12 +85,41 @@ export default function TeamPage() {
     }
   };
 
+  const removeTeamMember = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this public team member?")) return;
+    try {
+      const res = await fetchApi(`/team/${id}`, {
+        method: "DELETE",
+      });
+      if (res && res.success) {
+        fetchTeamRoster();
+      } else {
+        alert(res?.error || "Failed to delete member");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const filteredMembers = teamRoster.filter((m) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      m.name?.toLowerCase().includes(q) ||
+      m.role?.toLowerCase().includes(q) ||
+      m.skills?.some((s: string) => s.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <PageWrapper className="pt-24 pb-32">
       <AddEntityModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={() => {
+          setIsModalOpen(false);
+          fetchTeamRoster();
+        }} 
         entityType="NODE" 
+        mode="add"
       />
 
       <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 z-10 relative">
@@ -136,13 +176,13 @@ export default function TeamPage() {
           <div className="mb-16">
             <h2 className="font-heading text-2xl text-[var(--color-cyber-white)] uppercase mb-6 flex items-center gap-3">
               <Shield className="w-6 h-6 text-[var(--color-cyber-neon)]" />
-              Access Control Protocol
+              System Access Control
             </h2>
-            <div className="overflow-x-auto border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm">
+            <div className="overflow-x-auto border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm mb-16">
               <table className="w-full text-left font-mono text-sm min-w-[600px]">
                 <thead>
                   <tr className="border-b border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] text-xs uppercase tracking-widest">
-                    <th className="px-6 py-4">Operator</th>
+                    <th className="px-6 py-4">System User</th>
                     <th className="px-6 py-4">Email</th>
                     <th className="px-6 py-4">Clearance</th>
                     <th className="px-6 py-4">Modify Access</th>
@@ -177,7 +217,7 @@ export default function TeamPage() {
                           disabled={role === 'admin' && u.role === 'superadmin'}
                           className="text-xs uppercase tracking-widest text-cyber-red hover:bg-cyber-red/10 px-3 py-1 rounded-sm transition-colors border border-transparent hover:border-cyber-red/30 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
-                          Remove
+                          Revoke Access
                         </button>
                       </td>
                     </tr>
@@ -185,17 +225,42 @@ export default function TeamPage() {
                 </tbody>
               </table>
             </div>
+            
+            <h2 className="font-heading text-2xl text-[var(--color-cyber-white)] uppercase mb-6 flex items-center gap-3">
+              <Shield className="w-6 h-6 text-cyber-yellow" />
+              Public Roster Management
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+              {teamRoster.map((member) => (
+                <div key={member._id} className="relative group">
+                  <TeamCard member={member} />
+                  <button
+                    onClick={() => removeTeamMember(member._id)}
+                    className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-lg z-20"
+                    title="Delete Public Member"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-            {filteredMembers.map((member) => (
-              <TeamCard key={member.slug} member={member} />
-            ))}
+            {isLoading ? (
+              <div className="col-span-full py-24 text-center text-[var(--color-cyber-muted)] font-mono">
+                LOADING ROSTER...
+              </div>
+            ) : (
+              filteredMembers.map((member) => (
+                <TeamCard key={member._id || member.slug} member={member} />
+              ))
+            )}
           </div>
         )}
 
-        {!isManaging && filteredMembers.length === 0 && (
-          <div className="py-24 text-center bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)]">
+        {!isManaging && !isLoading && filteredMembers.length === 0 && (
+          <div className="py-24 text-center bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] mt-8">
             <p className="text-[var(--color-cyber-light)] font-body text-sm">No members found matching "{searchQuery}".</p>
           </div>
         )}

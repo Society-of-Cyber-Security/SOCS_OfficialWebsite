@@ -129,12 +129,18 @@ export function Navbar() {
                   </button>
                 </div>
               ) : (
-                <Link
-                  href="/login"
-                  className="btn-primary text-xs px-4 py-1.5 hidden lg:flex whitespace-nowrap"
-                >
-                  Member Portal
-                </Link>
+                <div className="hidden lg:flex items-center">
+                  <Link
+                    href="/login"
+                    className="group relative flex items-center gap-2 overflow-hidden rounded-md border border-[var(--color-cyber-blue)] bg-transparent px-5 py-2 text-sm font-bold tracking-wider text-[var(--color-cyber-blue)] uppercase transition-all duration-300 hover:border-transparent hover:text-white hover:shadow-[0_0_20px_rgba(52,211,153,0.5)]"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Member Portal
+                    </span>
+                    <div className="absolute inset-0 z-0 h-full w-0 bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-400 ease-out group-hover:w-full"></div>
+                  </Link>
+                </div>
               )
             ) : null}
 

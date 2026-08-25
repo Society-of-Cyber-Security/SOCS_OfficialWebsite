@@ -3,8 +3,9 @@
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { User, Sparkles, Star } from "lucide-react";
+import { User, Sparkles, Star, Mail } from "lucide-react";
 import { TeamMember } from "@/core/config/team";
+import { GithubIcon, LinkedinIcon } from "@/shared/components/ui/Icons";
 
 const CLEARANCE_MAP = {
   core: { label: "Core Admin", badgeColor: "border-[var(--color-cyber-white)] text-[var(--color-cyber-white)] bg-[var(--color-cyber-white)]/5", starCount: 3 },
@@ -95,13 +96,29 @@ export function CollectiveCard({
           )}
         </div>
 
-        {/* Card Footer */}
         <div className="pt-4 border-t border-[var(--color-cyber-gray)] flex justify-between items-center text-[10px] font-mono text-[var(--color-cyber-muted)] font-bold relative z-10">
           <span className="group-hover:text-[var(--color-cyber-white)] transition-colors flex items-center gap-2">
             <Sparkles className="w-3 h-3 text-[var(--color-cyber-neon)]" />
-            OPERATOR PROFILE
+            <span className="hidden sm:inline">OPERATOR</span> PROFILE
           </span>
-          <span className="text-[var(--color-cyber-muted)] group-hover:text-[var(--color-cyber-white)] group-hover:translate-x-1 transition-all">→</span>
+          <div className="flex items-center gap-3">
+            {member.github && (
+              <a href={member.github} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cyber-white)] transition-colors" aria-label="GitHub">
+                <GithubIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {member.linkedin && (
+              <a href={member.linkedin} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="hover:text-[#0077b5] transition-colors" aria-label="LinkedIn">
+                <LinkedinIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {member.email && (
+              <a href={`mailto:${member.email}`} onClick={(e) => e.stopPropagation()} className="hover:text-[var(--color-cyber-white)] transition-colors" aria-label="Email">
+                <Mail className="w-3.5 h-3.5" />
+              </a>
+            )}
+            <span className="text-[var(--color-cyber-muted)] group-hover:text-[var(--color-cyber-white)] group-hover:translate-x-1 transition-all ml-1">→</span>
+          </div>
         </div>
       </div>
     </Link>

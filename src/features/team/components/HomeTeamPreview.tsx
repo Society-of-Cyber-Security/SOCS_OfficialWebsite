@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { teamMembers } from "@/core/config/team";
 import { ArrowRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { fetchApi } from "@/shared/lib/api";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -13,13 +13,26 @@ if (typeof window !== "undefined") {
 
 export function HomeTeamPreview() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [previewMembers, setPreviewMembers] = useState<any[]>([]);
   
-  // Pick a few members to feature
-  const previewMembers = teamMembers
-    .filter((member) => ["abhishek", "adrash", "utkarsh"].includes(member.id))
-    .slice(0, 4);
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const res = await fetchApi('/team');
+        if (res && res.success) {
+          // Take top 4 members (likely core members since the API sorts by tier)
+          setPreviewMembers(res.data.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Failed to load team preview", err);
+      }
+    };
+    fetchTeam();
+  }, []);
 
   useEffect(() => {
+    if (previewMembers.length === 0) return;
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".team-member-reveal",
@@ -38,7 +51,7 @@ export function HomeTeamPreview() {
       );
     }, sectionRef);
     return () => ctx.revert();
-  }, []);
+  }, [previewMembers]);
 
   return (
     <section ref={sectionRef} className="py-24 md:py-36 w-full bg-[var(--color-cyber-black)] border-t border-[var(--color-cyber-gray)]">
@@ -67,9 +80,9 @@ export function HomeTeamPreview() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
           {previewMembers.map((member) => (
             <Link 
-              key={member.id} 
+              key={member._id} 
               href={`/team/${member.slug}`}
-              className="team-member-reveal group flex flex-col"
+              className="team-member-reveal group flex flex-col opacity-0"
             >
               <div className="aspect-[3/4] w-full mb-6 overflow-hidden bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] relative">
                 {/* Image placeholder / actual image */}
@@ -100,6 +113,12 @@ export function HomeTeamPreview() {
             </Link>
           ))}
         </div>
+        
+        {previewMembers.length === 0 && (
+          <div className="w-full py-12 text-center text-sm font-mono text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] border-dashed">
+            NO PUBLIC MEMBERS REGISTERED
+          </div>
+        )}
       </div>
 
     </section>

@@ -8,14 +8,7 @@ import { useAuth } from "@/core/context/AuthContext";
 import { fetchApi } from "@/shared/lib/api";
 import { motion } from 'framer-motion';
 
-const FALLBACK_IMAGES = [
-  { _id: 1, caption: "Core Team Briefing", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" },
-  { _id: 2, caption: "Infrastructure Dock", url: "https://images.unsplash.com/photo-1558494949-ef0109121c9b?auto=format&fit=crop&w=800&q=80" },
-  { _id: 3, caption: "Hackathon Event 2026", url: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80" },
-  { _id: 4, caption: "Cyber Squad Collaboration", url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" },
-  { _id: 5, caption: "Hardware & Security Lab", url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
-  { _id: 6, caption: "Night CTF Tournament", url: "https://images.unsplash.com/photo-1510511459019-5dee1a2078a5?auto=format&fit=crop&w=800&q=80" },
-];
+// Fallback images removed; the gallery now strictly uses the database
 
 export default function GalleryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,15 +20,14 @@ export default function GalleryPage() {
     const loadImages = async () => {
       try {
         const res = await fetchApi('/gallery');
-        if (res && res.success && res.data.length > 0) {
-          // Combine uploaded images with fallback placeholders to keep it looking nice
-          setImages([...res.data, ...FALLBACK_IMAGES]);
+        if (res && res.success) {
+          setImages(res.data);
         } else {
-          setImages(FALLBACK_IMAGES);
+          setImages([]);
         }
       } catch (err) {
         console.error("Failed to load gallery images", err);
-        setImages(FALLBACK_IMAGES);
+        setImages([]);
       } finally {
         setIsLoading(false);
       }
@@ -50,10 +42,7 @@ export default function GalleryPage() {
   const handleDelete = async (id: string | number) => {
     if (!confirm('Are you sure you want to delete this image?')) return;
     
-    if (typeof id === 'number') {
-      setImages(images.filter(img => img._id !== id));
-      return;
-    }
+
 
     try {
       const { fetchApi } = await import('@/shared/lib/api');
@@ -144,7 +133,7 @@ export default function GalleryPage() {
                     </h3>
                     {isAuthenticated && (role === 'admin' || role === 'superadmin') && img._id && (
                       <div className="flex items-center gap-1.5">
-                        {typeof img._id !== 'number' && (
+                        {img._id && (
                           <button
                             onClick={async (e) => {
                               e.preventDefault();
@@ -186,6 +175,12 @@ export default function GalleryPage() {
                 </div>
               </motion.div>
             ))
+          )}
+          
+          {!isLoading && images.length === 0 && (
+            <div className="col-span-full py-24 text-center border border-[var(--color-cyber-gray)] border-dashed">
+              <p className="text-[var(--color-cyber-muted)] font-mono text-sm tracking-widest uppercase">No visual data found in the archive.</p>
+            </div>
           )}
         </div>
       </div>

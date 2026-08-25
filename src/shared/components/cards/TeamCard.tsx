@@ -1,6 +1,7 @@
 import React from "react";
 import { TeamMember } from "@/core/config/team";
 import { GithubIcon, LinkedinIcon } from "@/shared/components/ui/Icons";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 
 export function TeamCard({ member }: { member: TeamMember }) {
@@ -54,10 +55,20 @@ export function TeamCard({ member }: { member: TeamMember }) {
             <a 
               href={member.linkedin} 
               onClick={(e) => e.stopPropagation()} 
-              className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors"
+              className="text-[var(--color-cyber-muted)] hover:text-[#0077b5] transition-colors"
               aria-label="LinkedIn"
             >
               <LinkedinIcon className="w-4 h-4" />
+            </a>
+          )}
+          {member.email && (
+            <a 
+              href={`mailto:${member.email}`} 
+              onClick={(e) => e.stopPropagation()} 
+              className="text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-white)] transition-colors"
+              aria-label="Email"
+            >
+              <Mail className="w-4 h-4" />
             </a>
           )}
         </div>

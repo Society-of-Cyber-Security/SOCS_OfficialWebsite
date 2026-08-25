@@ -22,12 +22,15 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       setIsSubmitting(false);
       setStep(0);
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -201,6 +204,19 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             type: data.eventType || 'other',
             registrationLink: data.registrationLink || ''
           };
+        } else if (entityType === 'NODE') {
+          endpoint = `/team/${initialData._id}`;
+          method = 'PUT';
+          payload = {
+            name: data.name,
+            role: data.role,
+            tier: data.tier || 'member',
+            skills: data.skills,
+            image: data.image,
+            github: data.github,
+            linkedin: data.linkedin,
+            email: data.email
+          };
         } else {
           payload = data;
         }
@@ -232,6 +248,18 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             location: data.location,
             type: data.eventType || 'workshop',
             isPublished: true
+          };
+        } else if (entityType === 'NODE') {
+          endpoint = `/team`;
+          payload = {
+            name: data.name,
+            role: data.role,
+            tier: data.tier || 'member',
+            skills: data.skills,
+            image: data.image,
+            github: data.github,
+            linkedin: data.linkedin,
+            email: data.email
           };
         } else {
           payload = data;
@@ -271,7 +299,19 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         return [
           { name: "name", label: "Operator Name", placeholder: "e.g. Alex Rivera" },
           { name: "role", label: "Designation & Role", placeholder: "e.g. Lead Security Researcher" },
-          { name: "clearance", label: "Clearance Tier", placeholder: "core / lead / member" },
+          { 
+            name: "tier", 
+            label: "Clearance Tier", 
+            options: [
+              { value: "core", label: "Core" },
+              { value: "lead", label: "Lead" },
+              { value: "member", label: "Member" }
+            ]
+          },
+          { name: "image", label: "Profile Image URL", placeholder: "https://...", optional: true },
+          { name: "github", label: "GitHub URL", placeholder: "https://github.com/...", optional: true },
+          { name: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/in/...", optional: true },
+          { name: "email", label: "Email Address", placeholder: "operator@socs.org", optional: true },
         ];
       case "EVENT":
         return [
@@ -352,25 +392,28 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999]">
           {/* Backdrop */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
           />
 
-          {/* Modal Content */}
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="stealth-card relative w-full max-w-lg bg-[var(--color-cyber-black)] rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl overflow-hidden z-10"
-          >
-            {/* Header */}
-            <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] p-5 flex items-center justify-between">
+          {/* Scrollable Container */}
+          <div className="fixed inset-0 overflow-y-auto overflow-x-hidden pointer-events-none">
+            <div className="min-h-full flex items-center justify-center p-4 sm:p-8 pointer-events-auto">
+              {/* Modal Content */}
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="stealth-card relative w-full max-w-lg bg-[var(--color-cyber-black)] rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl z-10"
+              >
+                {/* Header */}
+                <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] p-5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-[var(--color-cyber-black)] text-[var(--color-cyber-neon)] border border-[var(--color-cyber-gray)] rounded-sm">
                   {mode === 'propose' ? <Send className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
@@ -398,7 +441,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             )}
 
             {/* Form Area */}
-            <div className="p-6 sm:p-8 overflow-y-auto max-h-[70vh]">
+            <div className="p-6 sm:p-8">
               {step === 0 ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid gap-4">
@@ -513,6 +556,8 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
               )}
             </div>
           </motion.div>
+            </div>
+          </div>
         </div>
       )}
     </AnimatePresence>

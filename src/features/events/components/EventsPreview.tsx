@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { events } from "@/core/config/events";
 import { ArrowRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -13,9 +12,26 @@ if (typeof window !== "undefined") {
 
 export function EventsPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const displayEvents = events.slice(0, 4);
+  const [displayEvents, setDisplayEvents] = useState<any[]>([]);
 
   useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const { fetchApi } = await import('@/shared/lib/api');
+        const res = await fetchApi('/events');
+        if (res && res.success) {
+          setDisplayEvents(res.data.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Failed to load events", err);
+      }
+    };
+    loadEvents();
+  }, []);
+
+  useEffect(() => {
+    if (displayEvents.length === 0) return;
+    
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".event-row",
@@ -34,7 +50,7 @@ export function EventsPreview() {
       );
     }, containerRef);
     return () => ctx.revert();
-  }, []);
+  }, [displayEvents]);
 
   return (
     <section className="py-24 md:py-36 w-full bg-[var(--color-cyber-black)] border-t border-[var(--color-cyber-gray)]" ref={containerRef}>
@@ -106,6 +122,12 @@ export function EventsPreview() {
               </Link>
             );
           })}
+          
+          {displayEvents.length === 0 && (
+            <div className="py-12 text-center border-b border-[var(--color-cyber-gray)] text-sm font-mono text-[var(--color-cyber-muted)]">
+              NO UPCOMING DIRECTIVES
+            </div>
+          )}
         </div>
 
       </div>
