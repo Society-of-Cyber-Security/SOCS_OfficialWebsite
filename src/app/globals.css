@@ -99,6 +99,7 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 
 /* Scrollbar */
+:root { overflow-x: hidden; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #080A0F; }
 ::-webkit-scrollbar-thumb { background: #1E2330; border-radius: 3px; }

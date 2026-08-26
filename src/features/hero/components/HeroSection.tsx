@@ -54,7 +54,7 @@ export function HeroSection() {
 
   return (
     <>
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 min-h-[90vh] flex flex-col justify-center overflow-hidden w-full bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)]">
+      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 min-h-[90vh] flex flex-col justify-center overflow-hidden w-full max-w-full bg-[var(--color-cyber-black)] text-[var(--color-cyber-white)]">
         
         <div ref={contentRef} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12">
           
@@ -63,9 +63,9 @@ export function HeroSection() {
             
 
             {/* Main Hero Headline */}
-            <h1 className="hero-reveal font-heading font-black text-[clamp(4.5rem,9vw,8rem)] leading-[0.95] tracking-tighter mb-8">
+            <h1 className="hero-reveal font-heading font-black text-[clamp(2.8rem,9vw,8rem)] leading-[0.95] tracking-tighter mb-8 break-words">
               Society of <br/>
-              <span className="text-gradient-multi font-display font-bold tracking-tighter text-[clamp(5rem,10vw,9rem)] leading-[0.9] pr-2">Cyber</span> <br/>
+              <span className="text-gradient-multi font-display font-bold tracking-tighter text-[clamp(3.2rem,10vw,9rem)] leading-[0.9] pr-2">Cyber</span> <br/>
               Security.
             </h1>
 
@@ -90,8 +90,8 @@ export function HeroSection() {
           </div>
 
           {/* Right Column: 3D Visualization */}
-          <div className="lg:col-span-5 relative flex items-center justify-center min-h-[400px]">
-            <div ref={visualRef} className="w-full aspect-square relative lg:scale-110 xl:scale-125 z-0">
+          <div className="lg:col-span-5 relative flex items-center justify-center min-h-[300px] lg:min-h-[400px] overflow-hidden">
+            <div ref={visualRef} className="w-full aspect-square relative z-0">
               <NodeNetwork3D />
               
               {/* Subtle Decorative Elements */}

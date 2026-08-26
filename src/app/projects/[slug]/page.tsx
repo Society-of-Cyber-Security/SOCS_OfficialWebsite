@@ -75,7 +75,7 @@ export default function ProjectDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 lg:gap-12">
           {/* Main content */}
-          <div className="space-y-8">
+          <div className="space-y-8 min-w-0">
             <div className="stealth-card p-8 md:p-12 space-y-12">
               <div className="relative z-10">
                 <div className="flex flex-wrap gap-2 mb-6">
@@ -86,11 +86,11 @@ export default function ProjectDetailPage() {
                   ))}
                 </div>
                 
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter leading-[1] mb-6">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter leading-[1] mb-6 break-words overflow-wrap-anywhere">
                   {project.title}
                 </h1>
 
-                <p className="text-[var(--color-cyber-light)] font-body text-base leading-relaxed border-l-2 border-[var(--color-cyber-gray)] pl-4 py-1 max-w-3xl">
+                <p className="text-[var(--color-cyber-light)] font-body text-base leading-relaxed border-l-2 border-[var(--color-cyber-gray)] pl-4 py-1 max-w-3xl break-words">
                   {project.description}
                 </p>
               </div>
@@ -105,11 +105,11 @@ export default function ProjectDetailPage() {
                   Core modules designed for deep research and distributed environments.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm">
+                  <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm min-w-0">
                     <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Author</span>
                     <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono truncate">{project.uploadedBy?.name || 'Unknown'}</p>
                   </div>
-                  <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm">
+                  <div className="p-4 bg-[var(--color-cyber-black)] border border-[var(--color-cyber-gray)] rounded-sm min-w-0">
                     <span className="text-[9px] text-[var(--color-cyber-muted)] font-mono uppercase tracking-widest block mb-2">Stack / Tags</span>
                     <p className="text-xs text-[var(--color-cyber-white)] font-bold font-mono truncate">{project.tags?.join(" / ") || "N/A"}</p>
                   </div>
@@ -119,7 +119,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             <div className="stealth-card p-8 space-y-8">
               <h3 className="text-[10px] font-mono text-[var(--color-cyber-white)] font-bold uppercase tracking-[0.2em] border-b border-[var(--color-cyber-gray)] pb-4 relative z-10">
                 Access Controls
