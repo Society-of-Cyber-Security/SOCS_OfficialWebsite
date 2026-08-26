@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
   await connectDB();
-  const auth = await authenticate(req, ['admin', 'superadmin']);
+  const auth = await authenticate(req);
   if (auth.error) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
   }
@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('image') as File | null;
     const caption = formData.get('caption') as string;
+
+    const directAdd = formData.get('directAdd') === 'true';
 
     if (!file) {
       return NextResponse.json({ success: false, error: 'Please upload a file' }, { status: 400 });
@@ -35,14 +37,21 @@ export async function POST(req: NextRequest) {
     await writeFile(path.join(uploadDir, filename), buffer);
 
     const url = `/uploads/${filename}`;
-    const image = await GalleryImage.create({
-      filename,
-      url,
-      caption,
-      uploadedBy: auth.user?._id
-    });
+    
+    if (directAdd) {
+      if (auth.user?.role !== 'admin' && auth.user?.role !== 'superadmin') {
+        return NextResponse.json({ success: false, error: 'Not authorized' }, { status: 403 });
+      }
+      const image = await GalleryImage.create({
+        filename,
+        url,
+        caption,
+        uploadedBy: auth.user?._id
+      });
+      return NextResponse.json({ success: true, data: image }, { status: 201 });
+    }
 
-    return NextResponse.json({ success: true, data: image }, { status: 201 });
+    return NextResponse.json({ success: true, data: { url, filename } }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

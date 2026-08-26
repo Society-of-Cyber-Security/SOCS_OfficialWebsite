@@ -23,3 +23,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  await connectDB();
+  const auth = await authenticate(req, ['admin', 'superadmin']);
+  if (auth.error) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
+
+  try {
+    const body = await req.json();
+    const image = await GalleryImage.create({
+      filename: body.title || body.filename || 'upload',
+      url: body.url,
+      caption: body.title || body.category,
+      uploadedBy: auth.user?._id
+    });
+    return NextResponse.json({ success: true, data: image }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}

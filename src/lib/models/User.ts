@@ -11,6 +11,7 @@ export interface IUser extends Document {
   id: string;
   email: string;
   password?: string;
+  googleId?: string;
   name: string;
   role: Role;
   refreshToken?: string;
@@ -34,9 +35,13 @@ const UserSchema: Schema = new Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please add a password'],
     minlength: 6,
     select: false
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
   },
   name: {
     type: String,
@@ -71,7 +76,7 @@ const UserSchema: Schema = new Schema({
 
 // Encrypt password using bcrypt
 UserSchema.pre<IUser>('save', async function () {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return;
   }
   const salt = await bcrypt.genSalt(12);

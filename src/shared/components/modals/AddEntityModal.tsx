@@ -61,20 +61,60 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
     if (data.registrationLink) data.registrationLink = normalizeUrl(data.registrationLink);
 
     try {
+      let finalImageUrl = data.url;
+
+      if (entityType === 'VISUAL' && data.image && (data.image as File).size > 0) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', data.image);
+        uploadFormData.append('caption', data.title || data.category || 'Visual');
+        if (mode === 'add') {
+          uploadFormData.append('directAdd', 'true');
+        }
+
+        const uploadRes = await fetchApi(`/gallery/upload`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+
+        if (!uploadRes.success) {
+          alert(uploadRes.error || 'Failed to upload image');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (mode === 'add') {
+          setStep(1);
+          setTimeout(() => onClose(), 1800);
+          return;
+        } else {
+          finalImageUrl = uploadRes.data.url;
+          data.title = data.title || uploadRes.data.filename;
+        }
+      } else if (data.imageFile && (data.imageFile as File).size > 0) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', data.imageFile);
+        uploadFormData.append('caption', data.name || data.title || 'Profile Image');
+
+        const uploadRes = await fetchApi(`/gallery/upload`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+
+        if (!uploadRes.success) {
+          alert(uploadRes.error || 'Failed to upload image');
+          setIsSubmitting(false);
+          return;
+        }
+
+        data.image = uploadRes.data.url;
+      }
+
       let endpoint = '';
       let payload: any = {};
       let isFormData = false;
       let method = 'POST';
 
-      if (entityType === 'VISUAL' && mode === 'add' && data.image && (data.image as File).size > 0) {
-        // Direct upload by admin — send file to gallery upload endpoint
-        endpoint = `/gallery/upload`;
-        const visualFormData = new FormData();
-        visualFormData.append('image', data.image);
-        visualFormData.append('caption', data.title || data.category || 'Visual');
-        payload = visualFormData;
-        isFormData = true;
-      } else if (mode === 'propose') {
+      if (mode === 'propose') {
         // Member proposing — goes through submissions pipeline
         endpoint = `/submissions`;
         
@@ -84,7 +124,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             title: data.title || 'Gallery Image',
             description: data.description || `Gallery image submission: ${data.title || 'Untitled'}`,
             payload: {
-              url: data.url || '',
+              url: finalImageUrl || '',
               category: data.category || 'Events',
               filename: data.title?.toLowerCase().replace(/\s+/g, '-') || 'untitled'
             }
@@ -261,6 +301,13 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             linkedin: data.linkedin,
             email: data.email
           };
+        } else if (entityType === 'VISUAL') {
+          endpoint = `/gallery`;
+          payload = {
+            title: data.title,
+            url: finalImageUrl,
+            category: data.category
+          };
         } else {
           payload = data;
         }
@@ -299,16 +346,9 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         return [
           { name: "name", label: "Operator Name", placeholder: "e.g. Alex Rivera" },
           { name: "role", label: "Designation & Role", placeholder: "e.g. Lead Security Researcher" },
-          { 
-            name: "tier", 
-            label: "Clearance Tier", 
-            options: [
-              { value: "core", label: "Core" },
-              { value: "lead", label: "Lead" },
-              { value: "member", label: "Member" }
-            ]
-          },
-          { name: "image", label: "Profile Image URL", placeholder: "https://...", optional: true },
+
+          { name: "imageFile", label: "Upload Image File (Local)", placeholder: "Select image file...", type: "file", optional: true },
+          { name: "image", label: "Or Profile Image URL", placeholder: "https://...", optional: true },
           { name: "github", label: "GitHub URL", placeholder: "https://github.com/...", optional: true },
           { name: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/in/...", optional: true },
           { name: "email", label: "Email Address", placeholder: "operator@socs.org", optional: true },
@@ -339,25 +379,9 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
           { name: "url", label: "Resource URL", placeholder: "https://..." },
         ];
       case "VISUAL":
-        if (mode === 'add') {
-          return [
-            { name: "title", label: "Photo / Asset Title", placeholder: "e.g. Annual CTF Championship 2026" },
-            { 
-              name: "category", 
-              label: "Tag / Category", 
-              options: [
-                { value: "Team", label: "Team" },
-                { value: "Events", label: "Events" },
-                { value: "Infrastructure", label: "Infrastructure" }
-              ]
-            },
-            { name: "image", label: "Upload Image File", placeholder: "Select image file...", type: "file", optional: false },
-          ];
-        }
-        // Propose mode — no file upload, just URL
         return [
           { name: "title", label: "Photo / Asset Title", placeholder: "e.g. Annual CTF Championship 2026" },
-          { name: "description", label: "Description", placeholder: "Describe the image and context...", textarea: true },
+          { name: "description", label: "Description", placeholder: "Describe the image and context...", textarea: true, optional: mode === 'add' },
           { 
             name: "category", 
             label: "Tag / Category", 
@@ -367,7 +391,8 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
               { value: "Infrastructure", label: "Infrastructure" }
             ]
           },
-          { name: "url", label: "Image URL", placeholder: "https://images.unsplash.com/..." },
+          { name: "image", label: "Upload Image File (Local)", placeholder: "Select image file...", type: "file", optional: true },
+          { name: "url", label: "Or Image URL (Link)", placeholder: "https://...", optional: true },
         ];
       default:
         return [];
@@ -404,16 +429,16 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
 
           {/* Scrollable Container */}
           <div className="fixed inset-0 overflow-y-auto overflow-x-hidden pointer-events-none">
-            <div className="min-h-full flex items-center justify-center p-4 sm:p-8 pointer-events-auto">
+            <div className="min-h-full flex flex-col items-center p-4 sm:p-8 pointer-events-auto">
               {/* Modal Content */}
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="stealth-card relative w-full max-w-lg bg-[var(--color-cyber-black)] rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl z-10"
+                className="stealth-card relative w-full max-w-lg bg-[var(--color-cyber-black)] rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl z-10 my-auto"
               >
                 {/* Header */}
-                <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] p-5 flex items-center justify-between">
+                <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] p-5 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-[var(--color-cyber-black)] text-[var(--color-cyber-neon)] border border-[var(--color-cyber-gray)] rounded-sm">
                   {mode === 'propose' ? <Send className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
@@ -432,7 +457,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
 
             {/* Info banner for propose mode */}
             {mode === 'propose' && step === 0 && (
-              <div className="mx-6 mt-6 p-3 bg-[var(--color-tech-blue)]/10 border border-[var(--color-tech-blue)]/30 rounded-sm flex items-start gap-2">
+              <div className="mx-6 mt-6 p-3 bg-[var(--color-tech-blue)]/10 border border-[var(--color-tech-blue)]/30 rounded-sm flex items-start gap-2 shrink-0">
                 <Shield className="w-4 h-4 text-[var(--color-tech-blue)] shrink-0 mt-0.5" />
                 <p className="text-[11px] font-mono text-[var(--color-cyber-light)] leading-relaxed">
                   Your proposal will be reviewed by an admin before being published. You can track its status in your inbox.

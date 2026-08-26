@@ -14,14 +14,32 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("submitting");
-    setTimeout(() => {
-      setStatus("success");
-      setFormData({ name: "", email: "", subject: "JOIN_CLUB", message: "" });
-      setTimeout(() => setStatus("idle"), 5000);
-    }, 1500);
+    
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setStatus("success");
+        setFormData({ name: "", email: "", subject: "JOIN_CLUB", message: "" });
+        setTimeout(() => setStatus("idle"), 5000);
+      } else {
+        alert(data.error || "Failed to send message. Please try again later.");
+        setStatus("idle");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Network error. Please try again later.");
+      setStatus("idle");
+    }
   };
 
   return (
