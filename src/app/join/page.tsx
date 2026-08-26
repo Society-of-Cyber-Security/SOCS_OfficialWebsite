@@ -1,143 +1,128 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { fadeUpOnScroll } from "@/shared/lib/animations";
-import { ArrowRight, AlertCircle, UserPlus } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { PageWrapper } from "@/shared/components/layout/PageWrapper";
+import { Shield, Fingerprint, Activity, Lock } from "lucide-react";
+import gsap from "gsap";
 import { useAuth } from "@/core/context/AuthContext";
-import Link from "next/link";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 
 export default function JoinPage() {
-  const formRef = useRef<HTMLDivElement>(null);
-  
-  // Form State
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { register } = useAuth();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { checkAuth } = useAuth();
+
+  const titleRef = useRef(null);
+  const textRef = useRef(null);
+  const formRef = useRef(null);
 
   useEffect(() => {
-    if (formRef.current) fadeUpOnScroll(formRef.current);
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    tl.fromTo(titleRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1 })
+      .fromTo(textRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6")
+      .fromTo(formRef.current, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1 }, "-=0.4");
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsSubmitting(true);
-    
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setLoading(true);
     try {
-      await register(name, email, password);
-      router.push("/");
-    } catch (err: any) {
-      setError(err?.data?.error || err.message || "Registration failed");
-    } finally {
-      setIsSubmitting(false);
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        if (checkAuth) await checkAuth();
+        router.push("/");
+      } else {
+        alert(data.error || "Application failed. Please contact admin.");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error. Please try again later.");
+      setLoading(false);
     }
   };
 
   return (
-    <PageWrapper className="pt-32 pb-24 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--color-cyber-blue)] to-transparent opacity-20"></div>
-      <div className="absolute bottom-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--color-cyber-blue)] to-transparent opacity-10"></div>
-      
-      <div className="max-w-xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center p-4 bg-[var(--color-cyber-dark)] rounded-full mb-6 border border-[var(--color-cyber-gray)]">
-            <UserPlus className="w-8 h-8 text-[var(--color-cyber-blue)]" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter uppercase mb-4">
-            Join the Network
-          </h1>
-          <p className="text-[var(--color-cyber-muted)] font-mono text-sm max-w-md mx-auto">
-            Create an account to propose projects, resources, and events for the Society of Cyber Security.
-          </p>
-        </div>
-
-        <div ref={formRef} className="opacity-0 relative">
-          <div className="stealth-card p-8 md:p-12 border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm shadow-sm relative overflow-hidden">
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+      <PageWrapper className="pt-32 pb-32 flex flex-col items-center justify-center min-h-[90vh]">
+        <div className="w-full max-w-xl mx-auto px-6 relative z-10">
+          
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] flex items-center justify-center">
+                <Shield className="w-6 h-6 text-[var(--color-cyber-muted)]" />
+              </div>
+            </div>
             
-            {/* Decorative Corner Elements */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[var(--color-cyber-blue)] opacity-50"></div>
-            <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[var(--color-cyber-blue)] opacity-50"></div>
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[var(--color-cyber-blue)] opacity-50"></div>
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[var(--color-cyber-blue)] opacity-50"></div>
-
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-              {error && (
-                <div className="mb-6 p-4 border border-cyber-red/30 bg-cyber-red/10 text-cyber-red text-sm font-mono flex items-start gap-3 rounded-sm">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
-                  Full Name
-                </label>
-                <input 
-                  required 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
-                  placeholder="e.g. John Doe"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
-                  Contact Email
-                </label>
-                <input 
-                  required 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
-                  placeholder="user@university.edu"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
-                  Password
-                </label>
-                <input 
-                  required 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] px-4 py-4 text-[var(--color-cyber-white)] font-mono text-sm outline-none focus:border-[var(--color-cyber-white)] transition-all placeholder:text-[var(--color-cyber-muted)] rounded-sm"
-                  placeholder="••••••••"
-                />
-              </div>
-              
-              <div className="pt-6 border-t border-[var(--color-cyber-gray)]">
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer rounded-sm disabled:opacity-50 disabled:cursor-not-allowed group"
-                >
-                  <span>{isSubmitting ? 'Registering...' : 'Create Account'}</span>
-                  {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-                </button>
-              </div>
-
-              <div className="text-center pt-4">
-                <p className="text-xs font-mono text-[var(--color-cyber-muted)]">
-                  Already have an account? <Link href="/login" className="text-[var(--color-cyber-white)] hover:text-[var(--color-cyber-blue)] underline underline-offset-4 decoration-[var(--color-cyber-gray)] transition-colors">Sign in here</Link>
-                </p>
-              </div>
-            </form>
+            <h1 ref={titleRef} className="font-heading font-black text-5xl md:text-6xl text-[var(--color-cyber-white)] tracking-tighter uppercase mb-4 opacity-0">
+              Join the Network
+            </h1>
+            
+            <p ref={textRef} className="text-[var(--color-cyber-light)] font-mono text-sm leading-relaxed max-w-md mx-auto opacity-0">
+              Create an account to propose projects, resources, and events for the Society of Cyber Security.
+            </p>
           </div>
+
+          <div ref={formRef} className="opacity-0 relative">
+            <div className="stealth-card p-10 md:p-12 border border-[var(--color-cyber-gray)] bg-[var(--color-cyber-black)] rounded-sm shadow-sm relative overflow-hidden flex flex-col items-center text-center">
+              
+              {/* Decorative Corner Elements */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[var(--color-cyber-blue)] opacity-50"></div>
+              <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[var(--color-cyber-blue)] opacity-50"></div>
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[var(--color-cyber-blue)] opacity-50"></div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[var(--color-cyber-blue)] opacity-50"></div>
+
+              <div className="relative z-10 w-full flex flex-col items-center">
+                <div className="w-14 h-14 bg-[var(--color-cyber-dark)] text-[var(--color-cyber-white)] flex items-center justify-center mb-8 border border-[var(--color-cyber-gray)] rounded-sm">
+                  <Fingerprint className="w-6 h-6" />
+                </div>
+                
+                <span className="text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-[0.2em] block mb-4">
+                  New Recruit Authorization
+                </span>
+                
+                <h3 className="text-3xl font-heading font-black text-[var(--color-cyber-white)] tracking-tighter mb-6">
+                  Apply for Access
+                </h3>
+                
+                <p className="text-[var(--color-cyber-light)] font-body text-sm mb-10 leading-relaxed border-t border-b border-[var(--color-cyber-gray)] py-4 w-full">
+                  Use your Google Workspace account to generate a secure application token.
+                </p>
+
+                <div className="w-full flex justify-center min-h-[50px] relative z-20 pointer-events-auto">
+                  {loading ? (
+                    <div className="flex items-center gap-2 text-[var(--color-cyber-neon)]">
+                      <Activity className="w-5 h-5 animate-spin" />
+                      <span className="font-mono text-xs uppercase">Processing</span>
+                    </div>
+                  ) : (
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => {
+                        alert("Google Authentication Failed");
+                      }}
+                      theme="filled_black"
+                      shape="rectangular"
+                      size="large"
+                      text="continue_with"
+                    />
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
         </div>
-      </div>
-    </PageWrapper>
+      </PageWrapper>
+    </GoogleOAuthProvider>
   );
 }
