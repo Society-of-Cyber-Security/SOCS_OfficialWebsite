@@ -61,6 +61,20 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
     if (data.registrationLink) data.registrationLink = normalizeUrl(data.registrationLink);
 
     try {
+      const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB limit (Vercel has 4.5MB hard limit)
+      
+      if (data.image && (data.image as File).size > MAX_FILE_SIZE) {
+        alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (data.imageFile && (data.imageFile as File).size > MAX_FILE_SIZE) {
+        alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
+        setIsSubmitting(false);
+        return;
+      }
+
       let finalImageUrl = data.url;
 
       if (entityType === 'VISUAL' && data.image && (data.image as File).size > 0) {
