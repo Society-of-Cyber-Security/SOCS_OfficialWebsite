@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react"; // ArrowRight used in header link
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -80,7 +80,7 @@ export function FeaturedProjects() {
           </Link>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {isLoading ? (
             <div className="col-span-full flex items-center justify-center">
               <div className="flex flex-col items-center gap-4 text-[var(--color-cyber-muted)]">
@@ -97,27 +97,15 @@ export function FeaturedProjects() {
               <Link 
                 href={`/projects/${project._id || project.slug}`} 
                 key={project._id || project.slug || i}
-                className={`project-card-anim group stealth-card block min-w-0 overflow-hidden ${
-                  i === 0 ? "lg:col-span-8 lg:aspect-auto" : "lg:col-span-4 lg:aspect-auto"
-                } p-5 md:p-8 lg:p-12 flex flex-col justify-start md:justify-between`}
+                className="project-card-anim group stealth-card relative block min-w-0 overflow-hidden p-5 md:p-8 flex flex-col justify-between min-h-24 md:min-h-48"
               >
-                <div className="flex flex-wrap gap-1.5 mb-4 md:mb-8">
-                  {project.tags && project.tags.slice(0, 2).map((t: string, idx: number) => (
-                    <span key={idx} className="font-mono text-[9px] md:text-[10px] uppercase text-[var(--color-cyber-muted)] bg-[var(--color-cyber-dark)] px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm border border-[var(--color-cyber-gray)]">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex flex-col gap-2 md:gap-4 min-w-0">
-                  <h3 className="font-heading font-black text-lg md:text-3xl lg:text-4xl text-[var(--color-cyber-white)] tracking-tighter group-hover:text-[var(--color-cyber-neon)] transition-colors line-clamp-2 md:line-clamp-none break-words">
-                    {project.title}
-                  </h3>
-                  <p className="hidden md:block font-body text-[var(--color-cyber-light)] line-clamp-2 md:line-clamp-3 break-words text-sm md:text-base">
-                    {project.description}
-                  </p>
-                  <div className="mt-2 md:mt-4 flex items-center gap-2 text-xs md:text-sm font-heading font-bold text-[var(--color-cyber-white)] group-hover:text-[var(--color-cyber-neon)] transition-colors">
-                    Read Docs <ArrowRight className="w-3 h-3 md:w-4 md:h-4 transition-transform group-hover:translate-x-1" />
+                <h3 className="font-heading font-black text-base md:text-2xl lg:text-3xl text-[var(--color-cyber-white)] tracking-tighter group-hover:text-[var(--color-cyber-neon)] transition-colors break-words">
+                  {project.title}
+                </h3>
+                {/* Bottom arrow — visible on desktop */}
+                <div className="hidden md:flex items-center justify-end mt-6">
+                  <div className="w-9 h-9 rounded-full border border-[var(--color-cyber-gray)] flex items-center justify-center group-hover:bg-[var(--color-cyber-neon)] group-hover:border-[var(--color-cyber-neon)] group-hover:text-[var(--color-cyber-black)] transition-all duration-300">
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </div>
               </Link>

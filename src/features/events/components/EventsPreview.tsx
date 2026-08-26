@@ -99,26 +99,13 @@ export function EventsPreview() {
                 </div>
                 
                 {/* Details */}
-                <div className="flex-1 flex flex-col space-y-2 px-6 md:px-0">
+                <div className="flex-1 flex flex-col px-6 md:px-0">
                   <h3 className="font-heading font-bold text-2xl sm:text-3xl text-[var(--color-cyber-light)] group-hover:text-[var(--color-cyber-white)] tracking-tighter transition-colors">
                     {event.title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-3 mt-1">
-                    <span className="font-mono text-[11px] text-[var(--color-cyber-muted)] uppercase flex items-center gap-2 tracking-widest">
-                      <span className="w-1.5 h-1.5 bg-[var(--color-cyber-muted)] rounded-full" />
-                      {event.location}
-                    </span>
-                  </div>
                 </div>
 
-                {/* Badge */}
-                <div className="hidden md:flex shrink-0 items-center justify-end px-6">
-                  <span className={`font-mono text-[10px] uppercase tracking-widest px-3 py-1 border ${
-                    isCTF ? "border-[var(--color-cyber-neon)] text-[var(--color-cyber-neon)] bg-[var(--color-cyber-neon)]/5" : "border-[var(--color-cyber-gray)] text-[var(--color-cyber-light)] bg-[var(--color-cyber-black)]"
-                  }`}>
-                    {event.type}
-                  </span>
-                </div>
+
               </Link>
             );
           })}
