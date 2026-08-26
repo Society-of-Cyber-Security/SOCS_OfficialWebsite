@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import GalleryImage from '@/lib/models/GalleryImage';
 import { connectDB } from '@/lib/db';
 import { authenticate } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
+import { put } from '@vercel/blob';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,19 +24,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Please upload a file' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const uniqueSuffix = uuidv4() + path.extname(file.name);
     const filename = 'image-' + uniqueSuffix;
     
-    // Save to public/uploads
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch(e) {}
-    
-    await writeFile(path.join(uploadDir, filename), buffer);
-
-    const url = `/uploads/${filename}`;
+    // Upload to Vercel Blob
+    const blob = await put(filename, file, { access: 'public' });
+    const url = blob.url;
     
     if (directAdd) {
       if (auth.user?.role !== 'admin' && auth.user?.role !== 'superadmin') {
@@ -53,6 +46,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: { url, filename } }, { status: 201 });
   } catch (error: any) {
+    console.error("Vercel Blob Upload Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
