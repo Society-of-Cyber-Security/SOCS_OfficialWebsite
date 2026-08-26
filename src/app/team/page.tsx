@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { PageWrapper } from "@/shared/components/layout/PageWrapper";
-import { Search, Plus, Shield, Trash2 } from "lucide-react";
+import { Search, Plus, Shield, Trash2, Crown, Users, GraduationCap } from "lucide-react";
 import { AddEntityModal } from "@/shared/components/modals/AddEntityModal";
 import { TeamCard } from "@/shared/components/cards/TeamCard";
 import { useAuth } from "@/core/context/AuthContext";
@@ -101,14 +101,21 @@ export default function TeamPage() {
     }
   };
 
-  const filteredMembers = teamRoster.filter((m) => {
+  const applySearch = (members: any[]) => {
+    if (!searchQuery) return members;
     const q = searchQuery.toLowerCase();
-    return (
-      m.name?.toLowerCase().includes(q) ||
-      m.role?.toLowerCase().includes(q) ||
-      m.skills?.some((s: string) => s.toLowerCase().includes(q))
+    return members.filter(
+      (m) =>
+        m.name?.toLowerCase().includes(q) ||
+        m.role?.toLowerCase().includes(q) ||
+        m.skills?.some((s: string) => s.toLowerCase().includes(q))
     );
-  });
+  };
+
+  const boardMembers = applySearch(teamRoster.filter((m) => m.tier === "core"));
+  const teamMembers  = applySearch(teamRoster.filter((m) => m.tier === "lead" || m.tier === "member"));
+  const mentors      = applySearch(teamRoster.filter((m) => m.tier === "mentor"));
+  const totalVisible = boardMembers.length + teamMembers.length + mentors.length;
 
   return (
     <PageWrapper className="pt-24 pb-32">
@@ -123,7 +130,8 @@ export default function TeamPage() {
       />
 
       <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 z-10 relative">
-        {/* Header Section */}
+
+        {/* PAGE HEADER */}
         <div className="mb-12 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-[var(--color-cyber-gray)] pb-8 relative">
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyber-muted)] mb-4">
@@ -138,7 +146,6 @@ export default function TeamPage() {
           </div>
 
           <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-            {/* Search Input */}
             <div className="relative w-full sm:w-[320px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-cyber-muted)]" />
               <input 
@@ -172,6 +179,7 @@ export default function TeamPage() {
           </div>
         </div>
 
+        {/* MANAGEMENT MODE */}
         {isManaging && (role === "superadmin" || role === "admin") ? (
           <div className="mb-16">
             <h2 className="font-heading text-2xl text-[var(--color-cyber-white)] uppercase mb-6 flex items-center gap-3">
@@ -245,36 +253,132 @@ export default function TeamPage() {
               ))}
             </div>
           </div>
+
+        ) : isLoading ? (
+          <div className="py-24 text-center text-[var(--color-cyber-muted)] font-mono">
+            LOADING ROSTER...
+          </div>
+
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-            {isLoading ? (
-              <div className="col-span-full py-24 text-center text-[var(--color-cyber-muted)] font-mono">
-                LOADING ROSTER...
+          <div className="space-y-24">
+
+            {/* SECTION 1: BOARD MEMBERS */}
+            <section>
+              <div className="flex items-center gap-4 mb-10 pb-4 border-b border-[var(--color-cyber-white)]/20">
+                <div className="w-10 h-10 rounded-sm bg-[var(--color-cyber-white)]/10 border border-[var(--color-cyber-white)]/30 flex items-center justify-center shrink-0">
+                  <Crown className="w-5 h-5 text-[var(--color-cyber-white)]" />
+                </div>
+                <div>
+                  <h2 className="font-heading font-black text-2xl sm:text-3xl text-[var(--color-cyber-white)] tracking-tighter uppercase">
+                    Board Members
+                  </h2>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-cyber-muted)] mt-0.5">
+                    President · Vice President · General Secretary
+                  </p>
+                </div>
+                <span className="ml-auto font-mono text-xs text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1 rounded-sm shrink-0">
+                  {boardMembers.length} NODE{boardMembers.length !== 1 ? "S" : ""}
+                </span>
               </div>
-            ) : (
-              filteredMembers.map((member) => (
-                <TeamCard key={member._id || member.slug} member={member} />
-              ))
+
+              {boardMembers.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                  {boardMembers.map((member) => (
+                    <TeamCard key={member._id || member.slug} member={member} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center border border-dashed border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] font-mono text-xs uppercase tracking-widest">
+                  No Board Members Found
+                </div>
+              )}
+            </section>
+
+            {/* SECTION 2: TEAM MEMBERS */}
+            <section>
+              <div className="flex items-center gap-4 mb-10 pb-4 border-b border-[var(--color-cyber-neon)]/20">
+                <div className="w-10 h-10 rounded-sm bg-[var(--color-cyber-neon)]/10 border border-[var(--color-cyber-neon)]/30 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-[var(--color-cyber-neon)]" />
+                </div>
+                <div>
+                  <h2 className="font-heading font-black text-2xl sm:text-3xl text-[var(--color-cyber-white)] tracking-tighter uppercase">
+                    Team Members
+                  </h2>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-cyber-muted)] mt-0.5">
+                    Lead Operators · Active Members
+                  </p>
+                </div>
+                <span className="ml-auto font-mono text-xs text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1 rounded-sm shrink-0">
+                  {teamMembers.length} NODE{teamMembers.length !== 1 ? "S" : ""}
+                </span>
+              </div>
+
+              {teamMembers.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                  {teamMembers.map((member) => (
+                    <TeamCard key={member._id || member.slug} member={member} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center border border-dashed border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] font-mono text-xs uppercase tracking-widest">
+                  No Team Members Found
+                </div>
+              )}
+            </section>
+
+            {/* SECTION 3: MENTORS */}
+            <section>
+              <div className="flex items-center gap-4 mb-10 pb-4 border-b border-[var(--color-cyber-neon)]/10">
+                <div className="w-10 h-10 rounded-sm bg-[var(--color-cyber-neon)]/5 border border-[var(--color-cyber-neon)]/20 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-5 h-5 text-[var(--color-cyber-neon)]" />
+                </div>
+                <div>
+                  <h2 className="font-heading font-black text-2xl sm:text-3xl text-[var(--color-cyber-white)] tracking-tighter uppercase">
+                    Mentors
+                  </h2>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-cyber-muted)] mt-0.5">
+                    Advisors · Guides · Industry Experts
+                  </p>
+                </div>
+                <span className="ml-auto font-mono text-xs text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1 rounded-sm shrink-0">
+                  {mentors.length} NODE{mentors.length !== 1 ? "S" : ""}
+                </span>
+              </div>
+
+              {mentors.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                  {mentors.map((member) => (
+                    <TeamCard key={member._id || member.slug} member={member} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center border border-dashed border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] font-mono text-xs uppercase tracking-widest">
+                  No Mentors Found
+                </div>
+              )}
+            </section>
+
+            {totalVisible === 0 && searchQuery && (
+              <div className="py-24 text-center bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)]">
+                <p className="text-[var(--color-cyber-light)] font-body text-sm">
+                  No members found matching &quot;{searchQuery}&quot;.
+                </p>
+              </div>
             )}
           </div>
         )}
 
-        {!isManaging && !isLoading && filteredMembers.length === 0 && (
-          <div className="py-24 text-center bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] mt-8">
-            <p className="text-[var(--color-cyber-light)] font-body text-sm">No members found matching "{searchQuery}".</p>
-          </div>
-        )}
-
-        {/* Footer Log */}
+        {/* FOOTER LOG */}
         <div className="mt-20 pt-6 border-t border-[var(--color-cyber-gray)] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 bg-[var(--color-cyber-neon)] rounded-full animate-pulse shadow-[0_0_8px_var(--color-cyber-neon)]" />
-            <span>{isManaging ? users.length : filteredMembers.length} ACTIVE MEMBERS SYNCHRONIZED</span>
+            <span>{isManaging ? users.length : totalVisible} ACTIVE MEMBERS SYNCHRONIZED</span>
           </div>
           <div className="text-[var(--color-cyber-muted)]">
             SOCS DIRECTORY // VERIFIED
           </div>
         </div>
+
       </div>
     </PageWrapper>
   );

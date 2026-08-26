@@ -9,7 +9,7 @@ export type TeamMember = {
   github?: string;
   linkedin?: string;
   email?: string;
-  tier: "core" | "lead" | "member";
+  tier: "core" | "lead" | "member" | "mentor";
 };
 
 // Dummy data removed. Team members are now fetched from the database via /api/team

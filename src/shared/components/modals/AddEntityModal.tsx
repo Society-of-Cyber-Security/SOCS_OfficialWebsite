@@ -27,7 +27,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
@@ -37,7 +37,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Extract form data
     const formData = new FormData(e.target as HTMLFormElement);
     const data: Record<string, any> = {};
@@ -62,13 +62,13 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
 
     try {
       const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB limit (Vercel has 4.5MB hard limit)
-      
+
       if (data.image && (data.image as File).size > MAX_FILE_SIZE) {
         alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
         setIsSubmitting(false);
         return;
       }
-      
+
       if (data.imageFile && (data.imageFile as File).size > MAX_FILE_SIZE) {
         alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
         setIsSubmitting(false);
@@ -131,7 +131,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       if (mode === 'propose') {
         // Member proposing — goes through submissions pipeline
         endpoint = `/submissions`;
-        
+
         if (entityType === 'VISUAL') {
           payload = {
             type: 'gallery',
@@ -187,7 +187,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       } else if (mode === 'edit_submission' && initialData?._id) {
         endpoint = `/submissions/${initialData._id}`;
         method = 'PATCH';
-        
+
         if (entityType === 'PROJECT') {
           payload = {
             title: data.title,
@@ -233,7 +233,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       } else if (mode === 'edit' && initialData?._id) {
         endpoint = `/${entityType.toLowerCase()}s/${initialData._id}`;
         method = entityType === 'PROJECT' ? 'PATCH' : 'PUT';
-        
+
         if (entityType === 'PROJECT') {
           payload = {
             title: data.title,
@@ -277,7 +277,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       } else {
         // Direct Add by admin
         endpoint = `/${entityType.toLowerCase()}s`;
-        
+
         if (entityType === 'PROJECT') {
           payload = {
             title: data.title,
@@ -331,7 +331,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         method,
         body: isFormData ? payload : JSON.stringify(payload)
       });
-      
+
       if (result.success) {
         setStep(1);
         setTimeout(() => {
@@ -360,9 +360,17 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         return [
           { name: "name", label: "Operator Name", placeholder: "e.g. Alex Rivera" },
           { name: "role", label: "Designation & Role", placeholder: "e.g. Lead Security Researcher" },
-
-          { name: "imageFile", label: "Upload Image File (Local)", placeholder: "Select image file...", type: "file", optional: true },
-          { name: "image", label: "Or Profile Image URL", placeholder: "https://...", optional: true },
+          {
+            name: "tier",
+            label: "Member Tier",
+            options: [
+              { value: "core", label: "Board Member (Core)" },
+              { value: "lead", label: "Lead Operator" },
+              { value: "member", label: "Member" },
+              { value: "mentor", label: "Mentor" },
+            ]
+          },
+          { name: "imageFile", label: "Profile Image", placeholder: "https://...", type: "combined_image", optional: true },
           { name: "github", label: "GitHub URL", placeholder: "https://github.com/...", optional: true },
           { name: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/in/...", optional: true },
           { name: "email", label: "Email Address", placeholder: "operator@socs.org", optional: true },
@@ -379,9 +387,9 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         return [
           { name: "title", label: "Resource Title", placeholder: "e.g. OWASP Top 10 Deep Dive" },
           { name: "description", label: "Description", placeholder: "Brief summary of the resource...", textarea: true },
-          { 
-            name: "category", 
-            label: "Classification", 
+          {
+            name: "category",
+            label: "Classification",
             options: [
               { value: "roadmap", label: "Learning Roadmaps" },
               { value: "tool", label: "Security Tools" },
@@ -396,9 +404,9 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
         return [
           { name: "title", label: "Photo / Asset Title", placeholder: "e.g. Annual CTF Championship 2026" },
           { name: "description", label: "Description", placeholder: "Describe the image and context...", textarea: true, optional: mode === 'add' },
-          { 
-            name: "category", 
-            label: "Tag / Category", 
+          {
+            name: "category",
+            label: "Tag / Category",
             options: [
               { value: "Team", label: "Team" },
               { value: "Events", label: "Events" },
@@ -433,7 +441,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       {isOpen && (
         <div className="fixed inset-0 z-[9999]">
           {/* Backdrop */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -442,159 +450,198 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
           />
 
           {/* Scrollable Container */}
-          <div className="fixed inset-0 overflow-y-auto overflow-x-hidden pointer-events-none">
-            <div className="min-h-full flex flex-col items-center p-4 sm:p-8 pointer-events-auto">
+          <div className="fixed inset-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+            <div
+              className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6"
+              onClick={onClose}
+            >
               {/* Modal Content */}
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="stealth-card relative w-full max-w-lg bg-[var(--color-cyber-black)] rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl z-10 my-auto"
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-lg rounded-sm border border-[var(--color-cyber-gray)] shadow-2xl z-10 flex flex-col max-h-[90vh]"
+                style={{ background: 'rgb(10, 12, 18)' }}
               >
                 {/* Header */}
-                <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] p-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-[var(--color-cyber-black)] text-[var(--color-cyber-neon)] border border-[var(--color-cyber-gray)] rounded-sm">
-                  {mode === 'propose' ? <Send className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                </div>
-                <span className="text-sm font-black font-heading tracking-widest text-[var(--color-cyber-white)] uppercase">
-                  {mode === 'edit' ? 'EDIT' : mode === 'propose' ? 'PROPOSE' : 'ADD'} {mode !== 'edit' ? 'NEW' : ''} {entityType === 'VISUAL' ? 'GALLERY IMAGE' : entityType}
-                </span>
-              </div>
-              <button 
-                onClick={onClose}
-                className="p-2 text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-neon)] hover:bg-[var(--color-cyber-black)] rounded-sm transition-colors cursor-pointer border border-transparent hover:border-[var(--color-cyber-gray)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Info banner for propose mode */}
-            {mode === 'propose' && step === 0 && (
-              <div className="mx-6 mt-6 p-3 bg-[var(--color-tech-blue)]/10 border border-[var(--color-tech-blue)]/30 rounded-sm flex items-start gap-2 shrink-0">
-                <Shield className="w-4 h-4 text-[var(--color-tech-blue)] shrink-0 mt-0.5" />
-                <p className="text-[11px] font-mono text-[var(--color-cyber-light)] leading-relaxed">
-                  Your proposal will be reviewed by an admin before being published. You can track its status in your inbox.
-                </p>
-              </div>
-            )}
-
-            {/* Form Area */}
-            <div className="p-6 sm:p-8">
-              {step === 0 ? (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid gap-4">
-                    {getFields().map((field: any) => (
-                      <div key={field.name} className="space-y-1.5">
-                        <label className="text-xs font-mono font-bold text-[var(--color-cyber-muted)] uppercase tracking-widest flex items-center gap-2">
-                          {field.label}
-                          {field.optional && <span className="text-[var(--color-cyber-muted)]/50 normal-case tracking-normal font-normal">(optional)</span>}
-                        </label>
-                        {field.textarea ? (
-                          <textarea 
-                            required={!field.optional && mode !== 'edit'}
-                            name={field.name}
-                            placeholder={field.placeholder}
-                            rows={3}
-                            defaultValue={(() => {
-                              if (!initialData) return "";
-                              return initialData[field.name] || initialData.payload?.[field.name] || "";
-                            })()}
-                            className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-4 py-2.5 text-sm font-body text-[var(--color-cyber-light)] placeholder:text-[var(--color-cyber-muted)] outline-none focus:border-[var(--color-cyber-neon)] focus:bg-[var(--color-cyber-black)] transition-all resize-none"
-                          />
-                        ) : field.options ? (
-                          <select
-                            required={!field.optional && mode !== 'edit'}
-                            name={field.name}
-                            defaultValue={(() => {
-                              if (!initialData) return "";
-                              const d = initialData.payload || {};
-                              return initialData[field.name] || d[field.name] || "";
-                            })()}
-                            className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-4 py-2.5 text-sm font-body text-[var(--color-cyber-light)] outline-none focus:border-[var(--color-cyber-neon)] focus:bg-[var(--color-cyber-black)] transition-all cursor-pointer"
-                          >
-                            <option value="" disabled>Select option...</option>
-                            {field.options.map((opt: any) => (
-                              <option key={opt.value} value={opt.value} className="bg-[var(--color-cyber-black)] text-[var(--color-cyber-light)]">
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input 
-                            required={!field.optional && mode !== 'edit'}
-                            type={field.type || "text"}
-                            name={field.name}
-                            accept={field.type === 'file' ? "image/*" : undefined}
-                            placeholder={field.placeholder}
-                            defaultValue={(() => {
-                              if (!initialData) return "";
-                              const d = initialData.payload || {};
-                              if (entityType === "PROJECT") {
-                                if (field.name === "tech") return initialData.tags?.join(", ") || d.tags?.join(", ") || "";
-                                if (field.name === "github") return initialData.repoUrl || d.repoUrl || "";
-                              }
-                              if (entityType === "RESOURCE") {
-                                if (field.name === "tags") return initialData.tags?.join(", ") || d.tags?.join(", ") || "";
-                                if (field.name === "category") return initialData.category || d.category || "";
-                                if (field.name === "url") return initialData.url || d.url || "";
-                              }
-                              if (entityType === "EVENT") {
-                                if (field.name === "date") {
-                                  const dateVal = initialData.date || d.date;
-                                  return dateVal ? new Date(dateVal).toISOString().split('T')[0] : "";
-                                }
-                                if (field.name === "location") return initialData.location || d.location || "";
-                                if (field.name === "registrationLink") return initialData.registrationLink || d.registrationLink || "";
-                              }
-                              if (entityType === "VISUAL") {
-                                if (field.name === "url") return initialData.url || d.url || "";
-                                if (field.name === "category") return initialData.category || d.category || "";
-                              }
-                              return initialData[field.name] || d[field.name] || "";
-                            })()}
-                            className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-4 py-2.5 text-sm font-body text-[var(--color-cyber-light)] placeholder:text-[var(--color-cyber-muted)] outline-none focus:border-[var(--color-cyber-neon)] focus:bg-[var(--color-cyber-black)] transition-all file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-mono file:bg-cyber-blue file:text-[var(--color-cyber-white)] hover:file:bg-cyber-neon"
-                          />
-                        )}
-                      </div>
-                    ))}
+                <div className="bg-[var(--color-cyber-dark)] border-b border-[var(--color-cyber-gray)] px-4 py-2.5 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 bg-[var(--color-cyber-black)] text-[var(--color-cyber-neon)] border border-[var(--color-cyber-gray)] rounded-sm">
+                      {mode === 'propose' ? <Send className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+                    </div>
+                    <span className="text-[11px] font-black font-heading tracking-widest text-[var(--color-cyber-white)] uppercase">
+                      {mode === 'edit' ? 'EDIT' : mode === 'propose' ? 'PROPOSE' : 'ADD'} {mode !== 'edit' ? 'NEW' : ''} {entityType === 'VISUAL' ? 'GALLERY IMAGE' : entityType}
+                    </span>
                   </div>
+                  <button
+                    onClick={onClose}
+                    className="p-1 text-[var(--color-cyber-muted)] hover:text-[var(--color-cyber-neon)] rounded-sm transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
-                  <div className="pt-4">
-                    <button 
+                {/* Info banner for propose mode */}
+                {mode === 'propose' && step === 0 && (
+                  <div className="mx-3 mt-2 px-3 py-1.5 bg-[var(--color-tech-blue)]/10 border border-[var(--color-tech-blue)]/30 rounded-sm flex items-center gap-2 shrink-0">
+                    <Shield className="w-3 h-3 text-[var(--color-tech-blue)] shrink-0" />
+                    <p className="text-[10px] font-mono text-[var(--color-cyber-light)]">
+                      Proposal will be reviewed by admin before publishing.
+                    </p>
+                  </div>
+                )}
+
+                {/* Form Area */}
+                <div className="overflow-y-auto flex-1 px-3 py-2 overscroll-contain">
+                  {step === 0 ? (
+                    <form id="add-entity-form" onSubmit={handleSubmit} className="space-y-2">
+                      <div className="grid gap-2">
+                        {getFields().map((field: any) => (
+                          <div key={field.name} className="space-y-0.5">
+                            <label className="text-[9px] font-mono font-bold text-[var(--color-cyber-muted)] uppercase tracking-widest flex items-center gap-1">
+                              {field.label}
+                              {field.optional && <span className="opacity-50 normal-case tracking-normal font-normal">(opt)</span>}
+                            </label>
+                            {field.type === 'combined_image' ? (
+                              <div className="border border-[var(--color-cyber-gray)] rounded-sm overflow-hidden bg-[var(--color-cyber-dark)]">
+                                <div className="px-3 py-1.5">
+                                  <p className="text-[8px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest mb-1">Upload File</p>
+                                  <input
+                                    type="file"
+                                    name="imageFile"
+                                    accept="image/*"
+                                    className="w-full text-[11px] font-body text-[var(--color-cyber-light)] file:mr-2 file:py-0.5 file:px-2 file:rounded-sm file:border-0 file:text-[9px] file:font-mono file:bg-[var(--color-cyber-neon)]/20 file:text-[var(--color-cyber-neon)] hover:file:bg-[var(--color-cyber-neon)]/30 file:cursor-pointer outline-none"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2 px-3">
+                                  <div className="flex-1 h-px bg-[var(--color-cyber-gray)]" />
+                                  <span className="text-[8px] font-mono text-[var(--color-cyber-muted)] uppercase">or</span>
+                                  <div className="flex-1 h-px bg-[var(--color-cyber-gray)]" />
+                                </div>
+                                <div className="px-3 py-1.5">
+                                  <p className="text-[8px] font-mono text-[var(--color-cyber-muted)] uppercase tracking-widest mb-1">Image URL</p>
+                                  <input
+                                    type="text"
+                                    name="image"
+                                    placeholder="https://..."
+                                    defaultValue={(() => {
+                                      if (!initialData) return "";
+                                      return initialData.image || initialData.payload?.image || "";
+                                    })()}
+                                    className="w-full bg-transparent border-b border-[var(--color-cyber-gray)] py-1 text-[11px] font-body text-[var(--color-cyber-light)] placeholder:text-[var(--color-cyber-muted)] outline-none focus:border-[var(--color-cyber-neon)] transition-all"
+                                  />
+                                </div>
+                              </div>
+                            ) : field.textarea ? (
+                              <textarea
+                                required={!field.optional && mode !== 'edit'}
+                                name={field.name}
+                                placeholder={field.placeholder}
+                                rows={2}
+                                defaultValue={(() => {
+                                  if (!initialData) return "";
+                                  return initialData[field.name] || initialData.payload?.[field.name] || "";
+                                })()}
+                                className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-2.5 py-1.5 text-xs font-body text-[var(--color-cyber-light)] placeholder:text-[var(--color-cyber-muted)] outline-none focus:border-[var(--color-cyber-neon)] transition-all resize-none"
+                              />
+                            ) : field.options ? (
+                              <select
+                                required={!field.optional && mode !== 'edit'}
+                                name={field.name}
+                                defaultValue={(() => {
+                                  if (!initialData) return "";
+                                  const d = initialData.payload || {};
+                                  return initialData[field.name] || d[field.name] || "";
+                                })()}
+                                className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-2.5 py-1.5 text-xs font-body text-[var(--color-cyber-light)] outline-none focus:border-[var(--color-cyber-neon)] transition-all cursor-pointer"
+                              >
+                                <option value="" disabled>Select...</option>
+                                {field.options.map((opt: any) => (
+                                  <option key={opt.value} value={opt.value} className="bg-[var(--color-cyber-black)] text-[var(--color-cyber-light)]">
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                required={!field.optional && mode !== 'edit'}
+                                type={field.type || "text"}
+                                name={field.name}
+                                accept={field.type === 'file' ? "image/*" : undefined}
+                                placeholder={field.placeholder}
+                                defaultValue={(() => {
+                                  if (!initialData) return "";
+                                  const d = initialData.payload || {};
+                                  if (entityType === "PROJECT") {
+                                    if (field.name === "tech") return initialData.tags?.join(", ") || d.tags?.join(", ") || "";
+                                    if (field.name === "github") return initialData.repoUrl || d.repoUrl || "";
+                                  }
+                                  if (entityType === "RESOURCE") {
+                                    if (field.name === "tags") return initialData.tags?.join(", ") || d.tags?.join(", ") || "";
+                                    if (field.name === "category") return initialData.category || d.category || "";
+                                    if (field.name === "url") return initialData.url || d.url || "";
+                                  }
+                                  if (entityType === "EVENT") {
+                                    if (field.name === "date") {
+                                      const dateVal = initialData.date || d.date;
+                                      return dateVal ? new Date(dateVal).toISOString().split('T')[0] : "";
+                                    }
+                                    if (field.name === "location") return initialData.location || d.location || "";
+                                    if (field.name === "registrationLink") return initialData.registrationLink || d.registrationLink || "";
+                                  }
+                                  if (entityType === "VISUAL") {
+                                    if (field.name === "url") return initialData.url || d.url || "";
+                                    if (field.name === "category") return initialData.category || d.category || "";
+                                  }
+                                  return initialData[field.name] || d[field.name] || "";
+                                })()}
+                                className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-2.5 py-1.5 text-xs font-body text-[var(--color-cyber-light)] placeholder:text-[var(--color-cyber-muted)] outline-none focus:border-[var(--color-cyber-neon)] transition-all"
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="py-8 text-center space-y-3">
+                      <div className="w-14 h-14 bg-[var(--color-cyber-dark)] text-[var(--color-cyber-neon)] rounded-sm flex items-center justify-center mx-auto border border-[var(--color-cyber-neon)] shadow-[0_0_15px_rgba(0,255,157,0.2)]">
+                        <CheckCircle2 className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-black font-heading text-[var(--color-cyber-white)] tracking-widest uppercase">
+                        {mode === 'propose' ? 'PROPOSAL SUBMITTED!' : 'ENTRY SYNCHRONIZED!'}
+                      </h3>
+                      <p className="text-[var(--color-cyber-muted)] font-medium text-xs font-mono tracking-wider">
+                        {getSuccessMessage()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sticky submit button — always visible at bottom */}
+                {step === 0 && (
+                  <div className="shrink-0 px-3 pb-3 pt-2 border-t border-[var(--color-cyber-gray)]" style={{ background: 'rgb(10,12,18)' }}>
+                    <button
                       type="submit"
+                      form="add-entity-form"
                       disabled={isSubmitting}
-                      className="btn-primary w-full py-3.5 text-xs font-bold tracking-widest uppercase shadow-md cursor-pointer flex items-center justify-center gap-2 rounded-sm relative overflow-hidden"
+                      className="btn-primary w-full py-2 text-[10px] font-bold tracking-widest uppercase cursor-pointer flex items-center justify-center gap-1.5 rounded-sm relative overflow-hidden"
                     >
                       {isSubmitting ? (
-                        <div className="flex items-center gap-2 relative z-10">
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                        <div className="flex items-center gap-1.5 relative z-10">
+                          <Loader2 className="w-3 h-3 animate-spin" />
                           <span>PROCESSING...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 relative z-10">
-                          {mode === 'propose' ? <Send className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                        <div className="flex items-center gap-1.5 relative z-10">
+                          {mode === 'propose' ? <Send className="w-3 h-3" /> : <Save className="w-3 h-3" />}
                           <span>{getButtonLabel()}</span>
                         </div>
                       )}
                     </button>
                   </div>
-                </form>
-              ) : (
-                <div className="py-8 text-center space-y-3">
-                  <div className="w-14 h-14 bg-[var(--color-cyber-dark)] text-[var(--color-cyber-neon)] rounded-sm flex items-center justify-center mx-auto border border-[var(--color-cyber-neon)] shadow-[0_0_15px_rgba(0,255,157,0.2)]">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-black font-heading text-[var(--color-cyber-white)] tracking-widest uppercase">
-                    {mode === 'propose' ? 'PROPOSAL SUBMITTED!' : 'ENTRY SYNCHRONIZED!'}
-                  </h3>
-                  <p className="text-[var(--color-cyber-muted)] font-medium text-xs font-mono tracking-wider">
-                    {getSuccessMessage()}
-                  </p>
-                </div>
-              )}
-            </div>
-          </motion.div>
+                )}
+              </motion.div>
             </div>
           </div>
         </div>

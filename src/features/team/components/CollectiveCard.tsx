@@ -11,6 +11,7 @@ const CLEARANCE_MAP = {
   core: { label: "Core Admin", badgeColor: "border-[var(--color-cyber-white)] text-[var(--color-cyber-white)] bg-[var(--color-cyber-white)]/5", starCount: 3 },
   lead: { label: "Lead Operator", badgeColor: "border-[var(--color-cyber-neon)] text-[var(--color-cyber-neon)] bg-[var(--color-cyber-neon)]/5", starCount: 2 },
   member: { label: "Member", badgeColor: "border-[var(--color-cyber-gray)] text-[var(--color-cyber-light)] bg-[var(--color-cyber-dark)]", starCount: 1 },
+  mentor: { label: "Mentor", badgeColor: "border-[var(--color-cyber-neon)]/60 text-[var(--color-cyber-neon)] bg-[#0d2b2b]", starCount: 2 },
 } as const;
 
 export function CollectiveCard({

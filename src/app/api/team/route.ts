@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const members = await TeamMember.find({}).sort('-createdAt');
     // Ideally we might want to sort them by tier (core first, then lead, then member)
     const sortedMembers = members.sort((a, b) => {
-      const order = { 'core': 1, 'lead': 2, 'member': 3 };
+      const order = { 'core': 1, 'lead': 2, 'member': 3, 'mentor': 4 };
       return (order[a.tier as keyof typeof order] || 3) - (order[b.tier as keyof typeof order] || 3);
     });
     

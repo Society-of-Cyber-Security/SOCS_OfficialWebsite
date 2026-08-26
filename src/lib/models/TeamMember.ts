@@ -4,7 +4,7 @@ export interface ITeamMember extends Document {
   name: string;
   slug: string;
   role: string;
-  tier: 'core' | 'lead' | 'member';
+  tier: 'core' | 'lead' | 'member' | 'mentor';
   skills: string[];
   image?: string;
   github?: string;
@@ -17,7 +17,7 @@ const TeamMemberSchema: Schema = new Schema({
   name: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
   role: { type: String, required: true },
-  tier: { type: String, enum: ['core', 'lead', 'member'], default: 'member' },
+  tier: { type: String, enum: ['core', 'lead', 'member', 'mentor'], default: 'member' },
   skills: [{ type: String }],
   image: { type: String },
   github: { type: String },
