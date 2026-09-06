@@ -147,6 +147,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ac
           const galleryData: any = {
             filename: p.filename || submission.title.toLowerCase().replace(/\s+/g, '-'),
             caption: submission.title,
+            album: p.album || p.category || 'General',
+            eventId: p.eventId || undefined,
             uploadedBy: submission.submittedBy
           };
           const url = p.url || p.imageUrl || submission.attachmentUrl;

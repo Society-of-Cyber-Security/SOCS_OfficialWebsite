@@ -7,7 +7,19 @@ import { authenticate } from '@/lib/auth';
 export async function GET(req: NextRequest) {
   await connectDB();
   try {
-    const events = await Event.find({ isPublished: true }).sort('-date');
+    const { searchParams } = new URL(req.url);
+    const upcoming = searchParams.get('upcoming');
+    const query: any = { isPublished: true };
+
+    if (upcoming === 'true') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      query.date = { $gte: today };
+      const events = await Event.find(query).sort('date');
+      return NextResponse.json({ success: true, count: events.length, data: events });
+    }
+
+    const events = await Event.find(query).sort('-date');
     return NextResponse.json({ success: true, count: events.length, data: events });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

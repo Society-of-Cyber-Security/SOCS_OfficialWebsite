@@ -16,13 +16,24 @@ interface AddEntityModalProps {
 export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", initialData }: AddEntityModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(0);
+  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [selectedAlbumOption, setSelectedAlbumOption] = useState<string>("General");
 
   useEffect(() => {
     if (isOpen) {
       setIsSubmitting(false);
       setStep(0);
+      setSelectedAlbumOption(initialData?.album || initialData?.payload?.album || "General");
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
+
+      if (entityType === "VISUAL") {
+        fetchApi('/events').then((res) => {
+          if (res && res.success && Array.isArray(res.data)) {
+            setEventsList(res.data);
+          }
+        }).catch((err) => console.error("Failed to load events for gallery modal", err));
+      }
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
@@ -32,7 +43,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, entityType, initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +55,23 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
     formData.forEach((value, key) => {
       data[key] = value;
     });
+
+    // Resolve album and eventId for VISUAL
+    let resolvedAlbum = 'General';
+    let resolvedEventId: string | undefined = undefined;
+
+    if (entityType === 'VISUAL') {
+      const albumChoice = data.albumSelection || selectedAlbumOption || 'General';
+      if (albumChoice.startsWith('event:')) {
+        const parts = albumChoice.split(':');
+        resolvedEventId = parts[1];
+        resolvedAlbum = parts.slice(2).join(':') || 'Event Album';
+      } else if (albumChoice === 'custom') {
+        resolvedAlbum = (data.customAlbum as string)?.trim() || 'General';
+      } else {
+        resolvedAlbum = albumChoice;
+      }
+    }
 
     // Normalize URLs to prevent validation errors
     const normalizeUrl = (urlVal: any) => {
@@ -61,26 +89,16 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
     if (data.registrationLink) data.registrationLink = normalizeUrl(data.registrationLink);
 
     try {
-      const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB limit (Vercel has 4.5MB hard limit)
-
-      if (data.image && (data.image as File).size > MAX_FILE_SIZE) {
-        alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (data.imageFile && (data.imageFile as File).size > MAX_FILE_SIZE) {
-        alert("Image is too large! Vercel limits uploads to 4MB. Please compress your image or select a smaller one.");
-        setIsSubmitting(false);
-        return;
-      }
-
       let finalImageUrl = data.url;
 
       if (entityType === 'VISUAL' && data.image && (data.image as File).size > 0) {
         const uploadFormData = new FormData();
         uploadFormData.append('image', data.image);
-        uploadFormData.append('caption', data.title || data.category || 'Visual');
+        uploadFormData.append('caption', data.title || resolvedAlbum || 'Visual');
+        uploadFormData.append('album', resolvedAlbum);
+        if (resolvedEventId) {
+          uploadFormData.append('eventId', resolvedEventId);
+        }
         if (mode === 'add') {
           uploadFormData.append('directAdd', 'true');
         }
@@ -139,7 +157,10 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             description: data.description || `Gallery image submission: ${data.title || 'Untitled'}`,
             payload: {
               url: finalImageUrl || '',
-              category: data.category || 'Events',
+              caption: data.title || 'Gallery Image',
+              album: resolvedAlbum,
+              eventId: resolvedEventId,
+              category: resolvedAlbum,
               filename: data.title?.toLowerCase().replace(/\s+/g, '-') || 'untitled'
             }
           };
@@ -223,18 +244,24 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             title: data.title,
             description: data.description,
             payload: {
-              url: data.url,
-              category: data.category
+              url: finalImageUrl || initialData.payload?.url || '',
+              caption: data.title,
+              album: resolvedAlbum,
+              eventId: resolvedEventId,
+              category: resolvedAlbum
             }
           };
         } else {
-          payload = data;
+          payload = {
+            title: data.title || data.name,
+            description: data.description,
+            payload: data
+          };
         }
       } else if (mode === 'edit' && initialData?._id) {
-        endpoint = `/${entityType.toLowerCase()}s/${initialData._id}`;
-        method = entityType === 'PROJECT' ? 'PATCH' : 'PUT';
-
+        method = 'PATCH';
         if (entityType === 'PROJECT') {
+          endpoint = `/projects/${initialData._id}`;
           payload = {
             title: data.title,
             description: data.description,
@@ -242,59 +269,68 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             repoUrl: data.github
           };
         } else if (entityType === 'RESOURCE') {
+          endpoint = `/resources/${initialData._id}`;
           payload = {
             title: data.title,
             description: data.description,
             category: data.category,
-            url: data.url,
-            tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
+            tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : [],
+            url: data.url
           };
         } else if (entityType === 'EVENT') {
+          endpoint = `/events/${initialData._id}`;
           payload = {
             title: data.title,
             description: data.description,
             date: data.date,
             location: data.location,
             type: data.eventType || 'other',
-            registrationLink: data.registrationLink || ''
+            registrationLink: data.registrationLink
           };
         } else if (entityType === 'NODE') {
           endpoint = `/team/${initialData._id}`;
-          method = 'PUT';
           payload = {
             name: data.name,
             role: data.role,
-            tier: data.tier || 'member',
+            tier: data.tier,
             skills: data.skills,
             image: data.image,
             github: data.github,
             linkedin: data.linkedin,
             email: data.email
           };
-        } else {
-          payload = data;
+        } else if (entityType === 'VISUAL') {
+          endpoint = `/gallery/${initialData._id}`;
+          payload = {
+            caption: data.title,
+            album: resolvedAlbum,
+            eventId: resolvedEventId,
+            url: finalImageUrl || initialData.url
+          };
         }
       } else {
-        // Direct Add by admin
-        endpoint = `/${entityType.toLowerCase()}s`;
-
+        // Direct Add
         if (entityType === 'PROJECT') {
+          endpoint = `/projects`;
           payload = {
             title: data.title,
             description: data.description,
             tags: data.tech ? data.tech.split(',').map((t: string) => t.trim()) : [],
             repoUrl: data.github,
-            isPublished: true
+            isApproved: true
           };
         } else if (entityType === 'RESOURCE') {
+          endpoint = `/resources`;
           payload = {
             title: data.title,
             description: data.description,
-            category: data.category,
+            category: data.category || 'other',
+            tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : [],
             url: data.url,
-            tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
+            isApproved: true
           };
         } else if (entityType === 'EVENT') {
+          endpoint = `/events`;
           payload = {
             title: data.title,
             description: data.description,
@@ -319,8 +355,11 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
           endpoint = `/gallery`;
           payload = {
             title: data.title,
+            caption: data.title,
             url: finalImageUrl,
-            category: data.category
+            album: resolvedAlbum,
+            eventId: resolvedEventId,
+            category: resolvedAlbum
           };
         } else {
           payload = data;
@@ -365,7 +404,7 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
             label: "Member Tier",
             options: [
               { value: "core", label: "Board Member (Core)" },
-              { value: "lead", label: "Lead Operator" },
+              { value: "lead", label: "Department Lead" },
               { value: "member", label: "Member" },
               { value: "mentor", label: "Mentor" },
             ]
@@ -400,22 +439,43 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
           { name: "tags", label: "Tags", placeholder: "e.g. Web Security, Beginners", optional: true },
           { name: "url", label: "Resource URL", placeholder: "https://..." },
         ];
-      case "VISUAL":
-        return [
-          { name: "title", label: "Photo / Asset Title", placeholder: "e.g. Annual CTF Championship 2026" },
-          { name: "description", label: "Description", placeholder: "Describe the image and context...", textarea: true, optional: mode === 'add' },
-          {
-            name: "category",
-            label: "Tag / Category",
-            options: [
-              { value: "Team", label: "Team" },
-              { value: "Events", label: "Events" },
-              { value: "Infrastructure", label: "Infrastructure" }
-            ]
-          },
-          { name: "image", label: "Upload Image File (Local)", placeholder: "Select image file...", type: "file", optional: true },
-          { name: "url", label: "Or Image URL (Link)", placeholder: "https://...", optional: true },
+      case "VISUAL": {
+        const albumOptions = [
+          { value: "General", label: "General Gallery (General / All Non-Event)" },
+          ...eventsList.map(ev => ({
+            value: `event:${ev._id}:${ev.title}`,
+            label: `Event Album: ${ev.title}`
+          })),
+          { value: "custom", label: "+ Create Custom Album Name..." }
         ];
+
+        const visualFields: any[] = [
+          { name: "title", label: "Photo / Capture Title", placeholder: "e.g. Annual CTF Championship 2026", optional: true },
+          { name: "description", label: "Description", placeholder: "Describe the image and context...", textarea: true, optional: true },
+          {
+            name: "albumSelection",
+            label: "Target Album / Event",
+            options: albumOptions,
+            onChange: (e: any) => setSelectedAlbumOption(e.target.value)
+          },
+        ];
+
+        if (selectedAlbumOption === 'custom') {
+          visualFields.push({
+            name: "customAlbum",
+            label: "Custom Album Name",
+            placeholder: "e.g. Infrastructure Setup, Hackfest 2025",
+            optional: false
+          });
+        }
+
+        visualFields.push(
+          { name: "image", label: "Upload Image File (Local)", placeholder: "Select image file...", type: "file", optional: true },
+          { name: "url", label: "Or Image URL (Link)", placeholder: "https://...", optional: true }
+        );
+
+        return visualFields;
+      }
       default:
         return [];
     }
@@ -549,14 +609,26 @@ export function AddEntityModal({ isOpen, onClose, entityType, mode = "propose", 
                               <select
                                 required={!field.optional && mode !== 'edit'}
                                 name={field.name}
+                                onChange={field.onChange}
                                 defaultValue={(() => {
-                                  if (!initialData) return "";
+                                  if (field.name === 'albumSelection') {
+                                    if (initialData?.eventId) {
+                                      const evId = typeof initialData.eventId === 'object' ? initialData.eventId._id : initialData.eventId;
+                                      return `event:${evId}:${initialData.album || initialData.eventId.title || ''}`;
+                                    }
+                                    if (initialData?.album && initialData.album !== 'General') {
+                                      const foundEv = eventsList.find(e => e.title === initialData.album);
+                                      if (foundEv) return `event:${foundEv._id}:${foundEv.title}`;
+                                      return 'custom';
+                                    }
+                                    return 'General';
+                                  }
+                                  if (!initialData) return field.options[0]?.value || "";
                                   const d = initialData.payload || {};
-                                  return initialData[field.name] || d[field.name] || "";
+                                  return initialData[field.name] || d[field.name] || field.options[0]?.value || "";
                                 })()}
                                 className="w-full bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-gray)] rounded-sm px-2.5 py-1.5 text-xs font-body text-[var(--color-cyber-light)] outline-none focus:border-[var(--color-cyber-neon)] transition-all cursor-pointer"
                               >
-                                <option value="" disabled>Select...</option>
                                 {field.options.map((opt: any) => (
                                   <option key={opt.value} value={opt.value} className="bg-[var(--color-cyber-black)] text-[var(--color-cyber-light)]">
                                     {opt.label}

@@ -49,6 +49,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       image.caption = body.caption;
       image.markModified('caption');
     }
+    if (body.album !== undefined) {
+      image.album = body.album;
+      image.markModified('album');
+    }
+    if (body.eventId !== undefined) {
+      image.eventId = body.eventId && body.eventId !== '' ? body.eventId : undefined;
+      image.markModified('eventId');
+    }
 
     await image.save();
     return NextResponse.json({ success: true, data: image });

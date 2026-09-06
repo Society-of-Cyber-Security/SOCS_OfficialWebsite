@@ -78,15 +78,28 @@ export function Navbar() {
       >
         <div className="w-full max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12">
           
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="SOCS Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,184,255,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(0,184,255,0.8)] transition-all duration-300" />
-            <div className="flex items-end gap-2">
-              <span className="font-heading font-black text-3xl tracking-tighterer text-[var(--color-cyber-white)] leading-none drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] group-hover:text-cyber-blue group-hover:drop-shadow-[0_0_12px_var(--color-cyber-blue)] transition-all duration-300">
-                SOCS
-              </span>
+          {/* Brand & Partner Logos */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <Link href="/" className="flex items-center gap-3 group">
+              <img src="/logo.png" alt="SOCS Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,184,255,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(0,184,255,0.8)] transition-all duration-300" />
+              <div className="flex items-end gap-2">
+                <span className="font-heading font-black text-2xl sm:text-3xl tracking-tighter text-[var(--color-cyber-white)] leading-none drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] group-hover:text-cyber-blue group-hover:drop-shadow-[0_0_12px_var(--color-cyber-blue)] transition-all duration-300">
+                  SOCS
+                </span>
+              </div>
+            </Link>
+
+            <div className="h-6 w-px bg-[var(--color-cyber-gray)]/80 mx-0.5 sm:mx-1" />
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm overflow-hidden bg-white p-0.5 border border-[var(--color-cyber-gray)]/60 shadow-sm flex items-center justify-center transition-all duration-300 hover:border-cyber-blue hover:scale-105">
+                <img src="/partner-logo-1.jpg" alt="Partner Logo" className="w-full h-full object-contain" />
+              </div>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm overflow-hidden bg-white p-0.5 border border-[var(--color-cyber-gray)]/60 shadow-sm flex items-center justify-center transition-all duration-300 hover:border-cyber-blue hover:scale-105">
+                <img src="/partner-logo-2.jpg" alt="University Logo" className="w-full h-full object-contain" />
+              </div>
             </div>
-          </Link>
+          </div>
 
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center gap-8">

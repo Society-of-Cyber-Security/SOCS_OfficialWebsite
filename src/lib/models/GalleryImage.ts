@@ -5,6 +5,8 @@ export interface IGalleryImage extends Document {
   filename: string;
   url: string;
   caption?: string;
+  album?: string;
+  eventId?: mongoose.Types.ObjectId;
   isFeatured?: boolean;
   uploadedBy: IUser['_id'];
   createdAt: Date;
@@ -22,6 +24,16 @@ const GalleryImageSchema: Schema = new Schema({
   caption: {
     type: String,
     maxlength: [200, 'Caption can not be more than 200 characters']
+  },
+  album: {
+    type: String,
+    default: 'General',
+    trim: true
+  },
+  eventId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event',
+    required: false
   },
   isFeatured: {
     type: Boolean,

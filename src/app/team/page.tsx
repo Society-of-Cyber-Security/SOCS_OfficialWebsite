@@ -294,7 +294,7 @@ export default function TeamPage() {
               )}
             </section>
 
-            {/* SECTION 2: TEAM MEMBERS */}
+            {/* SECTION 2: DEPARTMENT LEADS */}
             <section>
               <div className="flex items-center gap-4 mb-10 pb-4 border-b border-[var(--color-cyber-neon)]/20">
                 <div className="w-10 h-10 rounded-sm bg-[var(--color-cyber-neon)]/10 border border-[var(--color-cyber-neon)]/30 flex items-center justify-center shrink-0">
@@ -302,10 +302,10 @@ export default function TeamPage() {
                 </div>
                 <div>
                   <h2 className="font-heading font-black text-2xl sm:text-3xl text-[var(--color-cyber-white)] tracking-tighter uppercase">
-                    Team Members
+                    Department Leads
                   </h2>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-cyber-muted)] mt-0.5">
-                    Lead Operators · Active Members
+                    Lead Operators · Domain Specialists
                   </p>
                 </div>
                 <span className="ml-auto font-mono text-xs text-[var(--color-cyber-muted)] border border-[var(--color-cyber-gray)] px-3 py-1 rounded-sm shrink-0">
@@ -321,7 +321,7 @@ export default function TeamPage() {
                 </div>
               ) : (
                 <div className="py-12 text-center border border-dashed border-[var(--color-cyber-gray)] text-[var(--color-cyber-muted)] font-mono text-xs uppercase tracking-widest">
-                  No Team Members Found
+                  No Department Leads Found
                 </div>
               )}
             </section>
