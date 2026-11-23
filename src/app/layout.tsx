@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Fira_Code } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar } from "@/shared/components/layout/Navbar";
 import { Footer } from "@/shared/components/layout/Footer";
@@ -7,19 +7,23 @@ import { ClientProviders } from "@/core/providers/AppProviders";
 import { AuthProvider } from "@/core/context/AuthContext";
 import { CustomCursor } from "@/shared/components/ui/CustomCursor";
 
-const spaceGrotesk = Space_Grotesk({
+const spaceGrotesk = localFont({
+  src: "./fonts/geist-latin.woff2",
   variable: "--font-space",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
-const firaCode = Fira_Code({
+const firaCode = localFont({
+  src: "./fonts/geist-mono-latin.woff2",
   variable: "--font-fira",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  ),
   title: "SOCS — Society of Cyber Security",
   description: "Society of Cyber Security Network — Research, Hacking, and Defense Community",
   icons: {
